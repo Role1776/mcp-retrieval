@@ -7,11 +7,11 @@
     "url": "https://github.com/Role1776/mcp-retrieval",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/role1776/mcp-retrieval:0.1.0",
+      "identifier": "ghcr.io/role1776/mcp-retrieval:0.1.1",
       "transport": {
         "type": "stdio"
       },

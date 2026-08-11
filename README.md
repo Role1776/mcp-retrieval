@@ -235,7 +235,7 @@ See [`.env.example`](.env.example) for the full list at its default values, read
 | :--- | :--- | :--- |
 | `MCP_TRANSPORT` | `stdio` | `stdio` or `http`. |
 | `MCP_NAME` | `mcp-retrieval` | Server name advertised to clients. |
-| `MCP_VERSION` | `0.1.0` | Server version advertised to clients. Identifies the build. |
+| `MCP_VERSION` | `0.1.1` | Server version advertised to clients. Identifies the build. |
 | `MCP_PATH` | `/mcp` | HTTP route (http transport only). |
 
 ### HTTP server (http transport only)
