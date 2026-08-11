@@ -1,0 +1,117 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write   # create the GitHub release
+  packages: write   # push to ghcr.io
+  id-token: write   # OIDC for the MCP Registry
+
+jobs:
+  # Tag pushes do not trigger ci.yml (it listens on branches and PRs), so the
+  # release gate re-runs the checks here. Nothing is published if they fail.
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: app/go.mod
+          cache-dependency-path: app/go.sum
+
+      - name: Verify dependencies
+        run: go mod verify
+        working-directory: app
+
+      - name: Vet
+        run: go vet ./...
+        working-directory: app
+
+      - name: Test
+        run: go test -race ./...
+        working-directory: app
+
+  release:
+    name: release
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: app/go.mod
+          cache-dependency-path: app/go.sum
+
+      # A tag containing a hyphen (v0.1.0-rc1) is a prerelease: it gets binaries
+      # and an image, but must not move :latest or publish a registry entry.
+      - name: Resolve version
+        id: version
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          echo "value=$v" >> "$GITHUB_OUTPUT"
+          if [[ "$v" == *-* ]]; then
+            echo "stable=false" >> "$GITHUB_OUTPUT"
+            echo "tags=ghcr.io/role1776/mcp-retrieval:$v" >> "$GITHUB_OUTPUT"
+          else
+            echo "stable=true" >> "$GITHUB_OUTPUT"
+            printf 'tags=%s\n' "ghcr.io/role1776/mcp-retrieval:$v,ghcr.io/role1776/mcp-retrieval:latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --- binaries: GitHub Releases (+ Homebrew tap once enabled) ---
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          version: "~> v2"
+          args: release --clean --config app/.goreleaser.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- container image: ghcr.io ---
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: app
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.version.outputs.tags }}
+
+      # --- metadata: official MCP Registry ---
+      # server.json is the source of truth for everything except the version,
+      # which is pinned to the tag here so the entry can never drift from it.
+      - name: Sync version into server.json
+        if: steps.version.outputs.stable == 'true'
+        run: |
+          v='${{ steps.version.outputs.value }}'
+          jq --arg v "$v" \
+            '.version = $v | .packages[0].identifier = "ghcr.io/role1776/mcp-retrieval:" + $v' \
+            server.json > server.json.tmp && mv server.json.tmp server.json
+
+      - name: Install mcp-publisher
+        if: steps.version.outputs.stable == 'true'
+        run: |
+          curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_amd64.tar.gz" \
+            | tar xz mcp-publisher
+          sudo mv mcp-publisher /usr/local/bin/
+
+      - name: Publish to the MCP Registry
+        if: steps.version.outputs.stable == 'true'
+        run: |
+          mcp-publisher login github-oidc
+          mcp-publisher publish

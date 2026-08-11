@@ -1,0 +1,16 @@
+# The build context is this directory, so only what `go build` needs may stay.
+
+# Local secrets. The final image never contains them, but they would still land
+# in the build context and the local layer cache.
+.env
+
+# Build artifacts (mirrors .gitignore). The leading slashes matter: a bare
+# "mcp-retrieval" would also match the cmd/mcp-retrieval source directory.
+/mcp-retrieval
+/cmd/mcp-retrieval/mcp-retrieval
+*.out
+
+# Build tooling that is not compiled into the binary.
+Dockerfile
+.dockerignore
+.goreleaser.yaml

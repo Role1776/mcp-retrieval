@@ -1,0 +1,94 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Role1776/mcp-retrieval",
+  "title": "MCP Retrieval",
+  "description": "Web search, image search, and page scraping as Markdown. No API keys required.",
+  "repository": {
+    "url": "https://github.com/Role1776/mcp-retrieval",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/role1776/mcp-retrieval:0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MAX_RESULTS",
+          "description": "Upper bound for snippets per query (default 20).",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "20"
+        },
+        {
+          "name": "MAX_IMAGES",
+          "description": "Upper bound for images per query (default 10).",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "10"
+        },
+        {
+          "name": "DEFAULT_TIMEOUT_MS",
+          "description": "Default per-call timeout in milliseconds (default 5000).",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "5000"
+        },
+        {
+          "name": "MAX_TIMEOUT_MS",
+          "description": "Highest timeout a call may request, in milliseconds (default 10000).",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "10000"
+        },
+        {
+          "name": "MAX_QUERIES",
+          "description": "Maximum queries or URLs accepted in one call (default 10).",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "10"
+        },
+        {
+          "name": "LOG_MODE",
+          "description": "local (text, debug) or prod (JSON, info). Logs go to stderr.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "local"
+        },
+        {
+          "name": "PROXY_SCHEME",
+          "description": "Outbound proxy scheme. Optional; set all five PROXY_* variables or none.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "PROXY_HOST",
+          "description": "Outbound proxy host. Enables per-request rotating proxy sessions.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "PROXY_PORT",
+          "description": "Outbound proxy port. Required when PROXY_HOST is set.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "PROXY_LOGIN",
+          "description": "Outbound proxy username. Required when PROXY_HOST is set.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "PROXY_PASSWORD",
+          "description": "Outbound proxy password. Required when PROXY_HOST is set.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

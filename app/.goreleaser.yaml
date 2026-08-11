@@ -1,0 +1,59 @@
+version: 2
+
+project_name: mcp-retrieval
+
+# GoReleaser runs from the repository root so that it sees the git history and
+# the files packed into the archives; the Go module itself lives in app/.
+before:
+  hooks:
+    - go -C app mod tidy
+
+builds:
+  - id: mcp-retrieval
+    dir: app
+    main: ./cmd/mcp-retrieval
+    binary: mcp-retrieval
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE
+      - .env.example
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+
+release:
+  draft: false
+  prerelease: auto

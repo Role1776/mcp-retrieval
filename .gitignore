@@ -1,0 +1,10 @@
+.env
+
+# build output (make build)
+/bin
+
+# coverage
+*.out
+
+# goreleaser
+/dist
