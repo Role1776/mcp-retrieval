@@ -15,7 +15,7 @@ const (
 type Config struct {
 	Transport string `env:"MCP_TRANSPORT" envDefault:"stdio" validate:"oneof=stdio http"`
 	Name      string `env:"MCP_NAME" envDefault:"mcp-retrieval"`
-	Version   string `env:"MCP_VERSION" envDefault:"0.1.0"`
+	Version   string `env:"MCP_VERSION" envDefault:"0.1.1"`
 	Path      string `env:"MCP_PATH" envDefault:"/mcp"` // used only when transport is http
 }
 
