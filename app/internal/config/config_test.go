@@ -314,7 +314,7 @@ func TestLoadEnvFile(t *testing.T) {
 			}{},
 		},
 		{
-			name:      "empty path falls back to .env in the working directory",
+			name:      "empty path ignores .env in the working directory",
 			content:   "SOME_CWD_TEST_KEY=cwd-value\n",
 			writeIt:   true,
 			emptyPath: true,
@@ -322,7 +322,7 @@ func TestLoadEnvFile(t *testing.T) {
 				wantErr bool
 				key     string
 				value   string
-			}{key: "SOME_CWD_TEST_KEY", value: "cwd-value"},
+			}{key: "SOME_CWD_TEST_KEY", value: ""},
 		},
 		{
 			name:      "empty path is not an error without .env in the working directory",
@@ -350,7 +350,7 @@ func TestLoadEnvFile(t *testing.T) {
 			dir := t.TempDir()
 			path := filepath.Join(dir, ".env")
 			if tc.emptyPath {
-				// the fallback resolves ".env" against the working directory
+				// an empty path must not resolve ".env" against the working directory
 				t.Chdir(dir)
 			}
 			if tc.isDir {

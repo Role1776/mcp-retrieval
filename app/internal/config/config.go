@@ -51,9 +51,7 @@ func Load(envPath string) (*Config, error) {
 
 func loadEnvFile(envPath string) error {
 	var err error
-	if envPath == "" {
-		err = godotenv.Load()
-	} else {
+	if envPath != "" {
 		err = godotenv.Load(envPath)
 	}
 
