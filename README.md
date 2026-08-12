@@ -15,7 +15,6 @@
 </p>
 
 <p align="center">
-  <a href="#demo">Demo</a> ·
   <a href="#tools">Tools</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#configuration">Configuration</a> ·
@@ -24,19 +23,9 @@
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
----
-
-## Demo
-
-<!-- TODO: replace the placeholder below with the real demo video.
-     GitHub renders an <video> tag inline when the src points at an
-     uploaded asset URL (https://github.com/user-attachments/assets/...). -->
-
-<p align="center">
-  <img src="https://img.shields.io/badge/%F0%9F%8E%AC_Demo_video-coming_soon-6E56CF?style=for-the-badge" alt="Demo video coming soon" height="48">
-</p>
-
-<p align="center"><i>An LLM using <code>web_search</code>, <code>web_search_images</code>, and <code>web_scrape</code> end to end — recording on the way.</i></p>
+<!-- TODO: add a demo here once it is recorded. GitHub renders a <video> tag
+     inline when the src points at an uploaded asset URL
+     (https://github.com/user-attachments/assets/...). -->
 
 ---
 
@@ -180,7 +169,7 @@ Point your client at the built binary. Example Claude Desktop config:
 {
   "mcpServers": {
     "retrieval": {
-      "command": "/absolute/path/to/app",
+      "command": "/absolute/path/to/mcp-retrieval",
       "env": {
         "MAX_RESULTS": "20"
       }
