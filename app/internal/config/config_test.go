@@ -53,7 +53,7 @@ func TestLoad(t *testing.T) {
 			expected: expected{
 				transport:            "stdio",
 				name:                 "mcp-retrieval",
-				version:              "0.1.1",
+				version:              "0.1.2",
 				path:                 "/mcp",
 				port:                 "8080",
 				readTimeout:          60 * time.Second,
@@ -84,7 +84,7 @@ func TestLoad(t *testing.T) {
 			expected: expected{
 				transport:            "http",
 				name:                 "env-name",
-				version:              "0.1.1",
+				version:              "0.1.2",
 				path:                 "/mcp",
 				port:                 "7070",
 				readTimeout:          60 * time.Second,
@@ -109,7 +109,7 @@ func TestLoad(t *testing.T) {
 			expected: expected{
 				transport:            "stdio",
 				name:                 "from-env-file",
-				version:              "0.1.1",
+				version:              "0.1.2",
 				path:                 "/mcp",
 				port:                 "8080",
 				readTimeout:          60 * time.Second,
@@ -149,7 +149,7 @@ func TestLoad(t *testing.T) {
 			expected: expected{
 				transport:            "stdio",
 				name:                 "from-env",
-				version:              "0.1.1",
+				version:              "0.1.2",
 				path:                 "/mcp",
 				port:                 "8080",
 				readTimeout:          60 * time.Second,
