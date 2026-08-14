@@ -2,7 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.Role1776/mcp-retrieval",
   "title": "MCP Retrieval",
-  "description": "Web search, image search, and page scraping as Markdown. No API keys required.",
+  "description": "Local Go MCP server: DuckDuckGo/Bing web + image search, readability scraping to Markdown.",
+  "websiteUrl": "https://github.com/Role1776/mcp-retrieval#readme",
   "repository": {
     "url": "https://github.com/Role1776/mcp-retrieval",
     "source": "github"
@@ -17,46 +18,132 @@
       },
       "environmentVariables": [
         {
-          "name": "MAX_RESULTS",
-          "description": "Upper bound for snippets per query (default 20).",
+          "name": "MCP_TRANSPORT",
+          "description": "stdio (client spawns the process) or http (streamable HTTP listener).",
           "isRequired": false,
           "isSecret": false,
-          "default": "20"
+          "default": "stdio",
+          "choices": ["stdio", "http"]
         },
         {
-          "name": "MAX_IMAGES",
-          "description": "Upper bound for images per query (default 10).",
+          "name": "MCP_NAME",
+          "description": "Server name reported in the MCP initialize handshake.",
           "isRequired": false,
           "isSecret": false,
-          "default": "10"
+          "default": "mcp-retrieval"
         },
         {
-          "name": "DEFAULT_TIMEOUT_MS",
-          "description": "Default per-call timeout in milliseconds (default 5000).",
+          "name": "MCP_PATH",
+          "description": "HTTP path the MCP endpoint is served on. Used only when MCP_TRANSPORT=http.",
           "isRequired": false,
           "isSecret": false,
-          "default": "5000"
+          "default": "/mcp"
         },
         {
-          "name": "MAX_TIMEOUT_MS",
-          "description": "Highest timeout a call may request, in milliseconds (default 10000).",
+          "name": "SERVER_PORT",
+          "description": "TCP port to listen on. Used only when MCP_TRANSPORT=http.",
           "isRequired": false,
           "isSecret": false,
-          "default": "10000"
+          "default": "8080"
         },
         {
-          "name": "MAX_QUERIES",
-          "description": "Maximum queries or URLs accepted in one call (default 10).",
+          "name": "SERVER_READ_TIMEOUT",
+          "description": "HTTP read timeout as a Go duration. Used only when MCP_TRANSPORT=http.",
           "isRequired": false,
           "isSecret": false,
-          "default": "10"
+          "default": "60s"
+        },
+        {
+          "name": "SERVER_WRITE_TIMEOUT",
+          "description": "HTTP write timeout as a Go duration. Used only when MCP_TRANSPORT=http.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "60s"
         },
         {
           "name": "LOG_MODE",
           "description": "local (text, debug) or prod (JSON, info). Logs go to stderr.",
           "isRequired": false,
           "isSecret": false,
-          "default": "local"
+          "default": "local",
+          "choices": ["local", "prod"]
+        },
+        {
+          "name": "MAX_IDLE_CONNS_PER_HOST",
+          "description": "Idle connections the outbound HTTP client keeps per host.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "100"
+        },
+        {
+          "name": "MAX_QUERIES",
+          "description": "Maximum queries or URLs accepted in one call.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "10"
+        },
+        {
+          "name": "DEFAULT_RESULTS",
+          "description": "Snippets returned per query when the call does not ask for a count.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "5"
+        },
+        {
+          "name": "MAX_RESULTS",
+          "description": "Upper bound for snippets per query.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "20"
+        },
+        {
+          "name": "DEFAULT_IMAGES",
+          "description": "Images returned per query when the call does not ask for a count.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "5"
+        },
+        {
+          "name": "MAX_IMAGES",
+          "description": "Upper bound for images per query.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "10"
+        },
+        {
+          "name": "DEFAULT_TIMEOUT_MS",
+          "description": "Per-call timeout in milliseconds when the call does not request one.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "5000"
+        },
+        {
+          "name": "MIN_TIMEOUT_MS",
+          "description": "Lowest timeout a call may request, in milliseconds.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "1000"
+        },
+        {
+          "name": "MAX_TIMEOUT_MS",
+          "description": "Highest timeout a call may request, in milliseconds.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "10000"
+        },
+        {
+          "name": "DEFAULT_DOCUMENT_CHARS",
+          "description": "Characters kept per scraped page when the call does not ask for a limit.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "20000"
+        },
+        {
+          "name": "MAX_DOCUMENT_CHARS",
+          "description": "Upper bound for characters kept per scraped page.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "20000"
         },
         {
           "name": "PROXY_SCHEME",

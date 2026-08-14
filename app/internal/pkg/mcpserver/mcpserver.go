@@ -12,10 +12,14 @@ const (
 	TransportHTTP  = "http"
 )
 
+// Version is reported in the MCP initialize handshake. "dev" is the value for
+// local builds only: the makefile, Dockerfile and GoReleaser all overwrite it
+// from the git tag via -ldflags -X, which needs a var and not a const.
+var Version = "dev"
+
 type Config struct {
 	Transport string `env:"MCP_TRANSPORT" envDefault:"stdio" validate:"oneof=stdio http"`
 	Name      string `env:"MCP_NAME" envDefault:"mcp-retrieval"`
-	Version   string `env:"MCP_VERSION" envDefault:"0.1.2"`
 	Path      string `env:"MCP_PATH" envDefault:"/mcp"` // used only when transport is http
 }
 
@@ -28,7 +32,7 @@ func NewServer(cfg *Config) *Server {
 	return &Server{
 		mcp: mcpsdk.NewServer(&mcpsdk.Implementation{
 			Name:    cfg.Name,
-			Version: cfg.Version,
+			Version: Version,
 		}, nil),
 		cfg: cfg,
 	}

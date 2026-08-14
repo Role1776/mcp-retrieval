@@ -17,8 +17,11 @@ builds:
       - CGO_ENABLED=0
     flags:
       - -trimpath
+    # .Version is the git tag without the leading "v" — GoReleaser derives it
+    # from the tag being built, so the binary reports the same version as the
+    # release, the image and server.json.
     ldflags:
-      - -s -w
+      - -s -w -X github.com/Role1776/mcp-retrieval/app/internal/pkg/mcpserver.Version={{ .Version }}
     goos:
       - linux
       - darwin

@@ -5,9 +5,15 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write   # create the GitHub release
+  contents: write   # create the GitHub release and upload assets
   packages: write   # push to ghcr.io
   id-token: write   # OIDC for the MCP Registry
+
+env:
+  # Pinned on purpose: the registry's ".../releases/latest/download/..." URL
+  # resolves to whatever shipped today, so a publisher change could break a
+  # release with no commit of ours in between.
+  MCP_PUBLISHER_VERSION: v1.8.1
 
 jobs:
   # Tag pushes do not trigger ci.yml (it listens on branches and PRs), so the
@@ -29,6 +35,10 @@ jobs:
 
       - name: Vet
         run: go vet ./...
+        working-directory: app
+
+      - name: Build
+        run: go build ./...
         working-directory: app
 
       - name: Test
@@ -64,7 +74,9 @@ jobs:
             printf 'tags=%s\n' "ghcr.io/role1776/mcp-retrieval:$v,ghcr.io/role1776/mcp-retrieval:latest" >> "$GITHUB_OUTPUT"
           fi
 
-      # --- binaries: GitHub Releases (+ Homebrew tap once enabled) ---
+      # --- 1. binaries: GitHub Releases ---
+      # GoReleaser derives the version from the tag it is building, and the
+      # ldflags in .goreleaser.yaml stamp it into the binary.
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
         with:
@@ -73,7 +85,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- container image: ghcr.io ---
+      # MCP Bundles let clients install the server with neither Docker nor a Go
+      # toolchain. They must be attached to the release before the registry
+      # runs, because it fetches each URL to verify the package exists.
+      - name: Build MCP bundles
+        run: scripts/build-mcpb.sh "${{ steps.version.outputs.value }}"
+
+      - name: Attach MCP bundles to the release
+        run: gh release upload "$GITHUB_REF_NAME" dist/mcpb/*.mcpb --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- 2. container image: ghcr.io ---
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
 
@@ -91,24 +114,30 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.version.outputs.tags }}
+          build-args: |
+            VERSION=${{ steps.version.outputs.value }}
 
-      # --- metadata: official MCP Registry ---
-      # server.json is the source of truth for everything except the version,
-      # which is pinned to the tag here so the entry can never drift from it.
+      # --- 3. metadata: official MCP Registry ---
+      # Everything above is now published, so the registry can verify that each
+      # package really exists and that the image carries the ownership label.
       - name: Sync version into server.json
         if: steps.version.outputs.stable == 'true'
-        run: |
-          v='${{ steps.version.outputs.value }}'
-          jq --arg v "$v" \
-            '.version = $v | .packages[0].identifier = "ghcr.io/role1776/mcp-retrieval:" + $v' \
-            server.json > server.json.tmp && mv server.json.tmp server.json
+        run: scripts/sync-server-json.sh "${{ steps.version.outputs.value }}"
 
       - name: Install mcp-publisher
         if: steps.version.outputs.stable == 'true'
         run: |
-          curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_amd64.tar.gz" \
+          curl -fsSL \
+            "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz" \
             | tar xz mcp-publisher
           sudo mv mcp-publisher /usr/local/bin/
+
+      # `publish` has no --dry-run flag; `validate` is the offline equivalent
+      # and reports every schema and semantic problem at once, so a malformed
+      # server.json fails here rather than halfway through publishing.
+      - name: Validate server.json
+        if: steps.version.outputs.stable == 'true'
+        run: mcp-publisher validate server.json
 
       - name: Publish to the MCP Registry
         if: steps.version.outputs.stable == 'true'

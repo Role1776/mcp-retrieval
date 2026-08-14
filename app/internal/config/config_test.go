@@ -17,7 +17,6 @@ func TestLoad(t *testing.T) {
 
 		transport string
 		name      string
-		version   string
 		path      string
 
 		port         string
@@ -53,7 +52,6 @@ func TestLoad(t *testing.T) {
 			expected: expected{
 				transport:            "stdio",
 				name:                 "mcp-retrieval",
-				version:              "0.1.2",
 				path:                 "/mcp",
 				port:                 "8080",
 				readTimeout:          60 * time.Second,
@@ -84,7 +82,6 @@ func TestLoad(t *testing.T) {
 			expected: expected{
 				transport:            "http",
 				name:                 "env-name",
-				version:              "0.1.2",
 				path:                 "/mcp",
 				port:                 "7070",
 				readTimeout:          60 * time.Second,
@@ -109,7 +106,6 @@ func TestLoad(t *testing.T) {
 			expected: expected{
 				transport:            "stdio",
 				name:                 "from-env-file",
-				version:              "0.1.2",
 				path:                 "/mcp",
 				port:                 "8080",
 				readTimeout:          60 * time.Second,
@@ -149,7 +145,6 @@ func TestLoad(t *testing.T) {
 			expected: expected{
 				transport:            "stdio",
 				name:                 "from-env",
-				version:              "0.1.2",
 				path:                 "/mcp",
 				port:                 "8080",
 				readTimeout:          60 * time.Second,
@@ -214,7 +209,7 @@ func TestLoad(t *testing.T) {
 
 			// isolate from the ambient environment (and from vars other cases loaded from .env files)
 			for _, k := range []string{
-				"MCP_TRANSPORT", "MCP_NAME", "MCP_VERSION", "MCP_PATH",
+				"MCP_TRANSPORT", "MCP_NAME", "MCP_PATH",
 				"SERVER_PORT", "SERVER_READ_TIMEOUT", "SERVER_WRITE_TIMEOUT",
 				"LOG_MODE", "MAX_IDLE_CONNS_PER_HOST",
 				"PROXY_LOGIN", "PROXY_PASSWORD", "PROXY_HOST", "PROXY_PORT", "PROXY_SCHEME",
@@ -254,7 +249,6 @@ func TestLoad(t *testing.T) {
 
 			assert.Equal(t, tc.expected.transport, cfg.MCP.Transport)
 			assert.Equal(t, tc.expected.name, cfg.MCP.Name)
-			assert.Equal(t, tc.expected.version, cfg.MCP.Version)
 			assert.Equal(t, tc.expected.path, cfg.MCP.Path)
 
 			assert.Equal(t, tc.expected.port, cfg.Server.Port)

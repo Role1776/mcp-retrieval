@@ -123,7 +123,7 @@ The all-failed messages deliberately do not distinguish timeouts from other caus
 
 ### Install
 
-Pick whichever fits — all three give the identical server.
+Pick whichever fits — all of them give the identical server.
 
 **Container** (no Go toolchain needed):
 
@@ -132,6 +132,8 @@ docker pull ghcr.io/role1776/mcp-retrieval:latest
 ```
 
 **Prebuilt binary** — grab the archive for your platform from the [latest release](https://github.com/Role1776/mcp-retrieval/releases/latest), unpack it, and put `mcp-retrieval` on your `PATH`.
+
+**MCP Bundle** — for clients that install `.mcpb` files, download `mcp-retrieval_<version>_<os>_<arch>.mcpb` from the [latest release](https://github.com/Role1776/mcp-retrieval/releases/latest) and open it with your client. The bundle carries the compiled binary, so it needs neither Docker nor Go. Pick the file matching your OS *and* CPU architecture: a bundle holds one native binary.
 
 **From source:**
 
@@ -224,8 +226,9 @@ See [`.env.example`](.env.example) for the full list at its default values, read
 | :--- | :--- | :--- |
 | `MCP_TRANSPORT` | `stdio` | `stdio` or `http`. |
 | `MCP_NAME` | `mcp-retrieval` | Server name advertised to clients. |
-| `MCP_VERSION` | `0.1.2` | Server version advertised to clients. Identifies the build. |
 | `MCP_PATH` | `/mcp` | HTTP route (http transport only). |
+
+The version advertised to clients is not configurable: it is stamped into the binary at build time from the git tag.
 
 ### HTTP server (http transport only)
 
