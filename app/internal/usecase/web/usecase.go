@@ -21,14 +21,14 @@ type retrieval interface {
 
 type SearchConfig struct {
 	MaxQueries           int   `env:"MAX_QUERIES" envDefault:"10" validate:"gt=0"`
-	DefaultResults       int   `env:"DEFAULT_RESULTS" envDefault:"5" validate:"gt=0,ltefield=MaxResults"`
+	DefaultResults       int   `env:"DEFAULT_RESULTS" envDefault:"5" validate:"gt=0"`
 	MaxResults           int   `env:"MAX_RESULTS" envDefault:"20" validate:"gt=0"`
-	DefaultTimeoutMs     int64 `env:"DEFAULT_TIMEOUT_MS" envDefault:"5000" validate:"gtefield=MinTimeoutMs,ltefield=MaxTimeoutMs"`
+	DefaultTimeoutMs     int64 `env:"DEFAULT_TIMEOUT_MS" envDefault:"5000" validate:"gt=0"`
 	MaxTimeoutMs         int64 `env:"MAX_TIMEOUT_MS" envDefault:"10000" validate:"gt=0"`
-	MinTimeoutMs         int64 `env:"MIN_TIMEOUT_MS" envDefault:"1000" validate:"gt=0,ltefield=MaxTimeoutMs"`
-	DefaultImages        int   `env:"DEFAULT_IMAGES" envDefault:"5" validate:"gt=0,ltefield=MaxImages"`
+	MinTimeoutMs         int64 `env:"MIN_TIMEOUT_MS" envDefault:"1000" validate:"gt=0"`
+	DefaultImages        int   `env:"DEFAULT_IMAGES" envDefault:"5" validate:"gt=0"`
 	MaxImages            int   `env:"MAX_IMAGES" envDefault:"10" validate:"gt=0"`
-	DefaultDocumentChars int   `env:"DEFAULT_DOCUMENT_CHARS" envDefault:"20000" validate:"gt=0,ltefield=MaxDocumentChars"`
+	DefaultDocumentChars int   `env:"DEFAULT_DOCUMENT_CHARS" envDefault:"20000" validate:"gt=0"`
 	MaxDocumentChars     int   `env:"MAX_DOCUMENT_CHARS" envDefault:"20000" validate:"gt=0"`
 }
 

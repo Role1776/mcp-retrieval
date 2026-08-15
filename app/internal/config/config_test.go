@@ -184,22 +184,35 @@ func TestLoad(t *testing.T) {
 			expected: expected{wantErr: true, errContains: "validate config"},
 		},
 		{
-			name:     "validation fails when default results exceed max results",
-			env:      map[string]string{"DEFAULT_RESULTS": "50", "MAX_RESULTS": "10"},
-			expected: expected{wantErr: true, errContains: "validate config"},
-		},
-		{
-			name:     "validation fails when min timeout exceeds max timeout",
-			env:      map[string]string{"MIN_TIMEOUT_MS": "20000", "MAX_TIMEOUT_MS": "10000"},
-			expected: expected{wantErr: true, errContains: "validate config"},
-		},
-		{
-			name: "validation fails when default timeout is below min timeout",
-			env: map[string]string{
-				"MIN_TIMEOUT_MS":     "3000",
-				"DEFAULT_TIMEOUT_MS": "1000",
-				"MAX_TIMEOUT_MS":     "10000",
+			// A default above its own maximum is accepted: limits.ResolveMax caps
+			// it at call time, exactly as it caps a caller-supplied number. Setting
+			// only one half of the pair must never stop the server from starting.
+			name: "default results above max results is accepted",
+			env:  map[string]string{"DEFAULT_RESULTS": "50", "MAX_RESULTS": "10"},
+			expected: expected{
+				transport:            "stdio",
+				name:                 "mcp-retrieval",
+				path:                 "/mcp",
+				port:                 "8080",
+				readTimeout:          60 * time.Second,
+				writeTimeout:         60 * time.Second,
+				logMode:              "local",
+				maxIdleConnsPerHost:  100,
+				maxQueries:           10,
+				defaultResults:       50,
+				maxResults:           10,
+				defaultTimeoutMs:     5000,
+				maxTimeoutMs:         10000,
+				minTimeoutMs:         1000,
+				defaultImages:        5,
+				maxImages:            10,
+				defaultDocumentChars: 20000,
+				maxDocumentChars:     20000,
 			},
+		},
+		{
+			name:     "validation fails on non-positive min timeout",
+			env:      map[string]string{"MIN_TIMEOUT_MS": "0"},
 			expected: expected{wantErr: true, errContains: "validate config"},
 		},
 	}
@@ -377,6 +390,35 @@ func TestLoadEnvFile(t *testing.T) {
 			if tc.expected.key != "" {
 				assert.Equal(t, tc.expected.value, os.Getenv(tc.expected.key))
 			}
+		})
+	}
+}
+
+// Limits come in DEFAULT_*/MAX_* pairs, but each variable is validated on its
+// own. Setting one half without the other used to abort startup with an error
+// naming the other half; the call-time clamp in limits.ResolveMax makes such a
+// config harmless, so Load must accept it.
+func TestLoadAcceptsUnpairedLimits(t *testing.T) {
+	cases := map[string]map[string]string{
+		"max results below its default":        {"MAX_RESULTS": "1"},
+		"max images below its default":         {"MAX_IMAGES": "1"},
+		"max document chars below its default": {"MAX_DOCUMENT_CHARS": "100"},
+		"max timeout below its default":        {"MAX_TIMEOUT_MS": "500"},
+		"max timeout below the min":            {"MIN_TIMEOUT_MS": "20000", "MAX_TIMEOUT_MS": "10000"},
+		"default results above its max":        {"DEFAULT_RESULTS": "50"},
+		"default timeout below the min":        {"MIN_TIMEOUT_MS": "3000", "DEFAULT_TIMEOUT_MS": "1000"},
+	}
+
+	for name, env := range cases {
+		t.Run(name, func(t *testing.T) {
+			for k, v := range env {
+				t.Setenv(k, v)
+			}
+
+			cfg, err := Load("")
+
+			require.NoError(t, err)
+			require.NotNil(t, cfg)
 		})
 	}
 }
