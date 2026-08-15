@@ -6,10 +6,20 @@
 # package per bundle in dist/mcpb — reusing the OCI package's environment
 # variable list so it is declared in exactly one place.
 #
-# Usage: scripts/sync-server-json.sh <version>
+# Running it twice is safe: every mcpb package is rebuilt from dist/mcpb rather
+# than appended to whatever was already there.
+#
+# Usage: scripts/sync-server-json.sh <version> [--no-bundles]
+#
+#   --no-bundles  only pin the version and the image tag. Without it a missing
+#                 or empty dist/mcpb is an error, so a release can never
+#                 silently ship with the Docker package alone.
 set -euo pipefail
 
-version="${1:?usage: sync-server-json.sh <version>}"
+version="${1:?usage: sync-server-json.sh <version> [--no-bundles]}"
+want_bundles=1
+[ "${2:-}" = "--no-bundles" ] && want_bundles=0
+
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 file="$root/server.json"
 bundles="$root/dist/mcpb"
@@ -20,6 +30,21 @@ release_base="https://github.com/Role1776/mcp-retrieval/releases/download/v${ver
 # casing. The registry never compares the two, so this is not a mismatch.
 image="ghcr.io/role1776/mcp-retrieval:${version}"
 
+# Collect the inputs before touching server.json, so a missing bundle aborts
+# with the file untouched rather than half-rewritten.
+found=()
+if [ "$want_bundles" -eq 1 ]; then
+  shopt -s nullglob
+  found=("$bundles"/*.mcpb)
+  shopt -u nullglob
+
+  if [ "${#found[@]}" -eq 0 ]; then
+    echo "no .mcpb bundles in $bundles" >&2
+    echo "run scripts/build-mcpb.sh <version> first, or pass --no-bundles on purpose" >&2
+    exit 1
+  fi
+fi
+
 tmp="$(mktemp)"
 jq --arg v "$version" --arg image "$image" '
   .version = $v
@@ -27,9 +52,12 @@ jq --arg v "$version" --arg image "$image" '
 ' "$file" > "$tmp"
 mv "$tmp" "$file"
 
-if [ -d "$bundles" ]; then
-  for bundle in "$bundles"/*.mcpb; do
-    [ -e "$bundle" ] || continue
+if [ "$want_bundles" -eq 0 ]; then
+  echo "server.json synced to $version (version and image only, no mcpb packages)"
+  exit 0
+fi
+
+for bundle in "${found[@]}"; do
     name="$(basename "$bundle")"
     # `shasum -a 256` on macOS, `sha256sum` on Linux runners.
     sha="$(if command -v sha256sum >/dev/null; then sha256sum "$bundle"; else shasum -a 256 "$bundle"; fi | cut -d' ' -f1)"
@@ -49,8 +77,7 @@ if [ -d "$bundles" ]; then
     ' "$file" > "$tmp"
     mv "$tmp" "$file"
     echo "added mcpb package $name ($sha)"
-  done
-fi
+done
 
 jq -e '.version' "$file" > /dev/null
-echo "server.json synced to $version"
+echo "server.json synced to $version: 1 oci + $(jq '[.packages[] | select(.registryType == "mcpb")] | length' "$file") mcpb packages"
