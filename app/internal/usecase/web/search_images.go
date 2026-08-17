@@ -76,7 +76,7 @@ func (u *UseCase) executeOneImagesQuery(ctx context.Context, query web.Query, re
 		Query:       query.String(),
 		Status:      status,
 		Count:       resImages.Len(),
-		Images:      resImages,
+		Images:      toImages(resImages),
 		TotalTimeMs: time.Since(start).Milliseconds(),
 	}, err
 }

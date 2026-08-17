@@ -12,16 +12,47 @@ import (
 )
 
 type Snippet struct {
-	ID      uuid.UUID `json:"id" validate:"required"`
-	Link    string    `json:"link" validate:"required"`
-	Title   string    `json:"title" validate:"required"`
-	Rank    int       `json:"rank" validate:"required,gt=0"`
-	Source  string    `json:"source" validate:"required"`
-	Snippet string    `json:"snippet" validate:"required"`
-	Favicon string    `json:"favicon" validate:"omitempty"`
+	id      uuid.UUID
+	link    string
+	title   string
+	rank    int
+	source  string
+	snippet string
+	favicon string
 }
 
 type SnippetProps struct {
+	Link    string `validate:"required"`
+	Title   string `validate:"required"`
+	Rank    int    `validate:"required,gt=0"`
+	Source  string `validate:"required"`
+	Snippet string `validate:"required"`
+	Favicon string `validate:"omitempty"`
+}
+
+func NewSnippet(props SnippetProps) (Snippet, error) {
+	if err := validator.Validate(props); err != nil {
+		return Snippet{}, err
+	}
+
+	id, err := uuid.NewV7()
+	if err != nil {
+		return Snippet{}, err
+	}
+
+	return Snippet{
+		id:      id,
+		title:   props.Title,
+		link:    props.Link,
+		source:  props.Source,
+		snippet: props.Snippet,
+		favicon: props.Favicon,
+		rank:    props.Rank,
+	}, nil
+}
+
+type SnippetView struct {
+	ID      uuid.UUID
 	Link    string
 	Title   string
 	Rank    int
@@ -30,31 +61,20 @@ type SnippetProps struct {
 	Favicon string
 }
 
-func NewSnippet(props SnippetProps) (Snippet, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return Snippet{}, err
+func (s Snippet) View() SnippetView {
+	return SnippetView{
+		ID:      s.id,
+		Link:    s.link,
+		Title:   s.title,
+		Rank:    s.rank,
+		Source:  s.source,
+		Snippet: s.snippet,
+		Favicon: s.favicon,
 	}
-
-	snippet := Snippet{
-		ID:      id,
-		Title:   props.Title,
-		Link:    props.Link,
-		Source:  props.Source,
-		Snippet: props.Snippet,
-		Favicon: props.Favicon,
-		Rank:    props.Rank,
-	}
-
-	if err := validator.Validate(snippet); err != nil {
-		return Snippet{}, err
-	}
-
-	return snippet, nil
 }
 
 func (s Snippet) Host() string {
-	parsed, err := url.Parse(s.Link)
+	parsed, err := url.Parse(s.link)
 	if err != nil {
 		return ""
 	}
@@ -63,22 +83,22 @@ func (s Snippet) Host() string {
 }
 
 func (s Snippet) Reranked(rank int) Snippet {
-	s.Rank = rank
+	s.rank = rank
 	return s
 }
 
 func (s Snippet) Markdown() string {
 	var b strings.Builder
 
-	b.WriteString(strconv.Itoa(s.Rank))
+	b.WriteString(strconv.Itoa(s.rank))
 	b.WriteString(". ")
-	b.WriteString(s.Title)
+	b.WriteString(s.title)
 	b.WriteString("\n")
-	b.WriteString(s.Link)
+	b.WriteString(s.link)
 
-	if s.Snippet != "" {
+	if s.snippet != "" {
 		b.WriteString("\n")
-		b.WriteString(s.Snippet)
+		b.WriteString(s.snippet)
 	}
 
 	return b.String()
@@ -92,6 +112,15 @@ func (s Snippets) Len() int {
 
 func (s Snippets) IsEmpty() bool {
 	return len(s) == 0
+}
+
+func (s Snippets) Views() []SnippetView {
+	views := make([]SnippetView, 0, len(s))
+	for _, snippet := range s {
+		views = append(views, snippet.View())
+	}
+
+	return views
 }
 
 func (s Snippets) Limit(n int) Snippets {
@@ -110,10 +139,10 @@ func (s Snippets) Dedupe() Snippets {
 	result := make(Snippets, 0, len(s))
 
 	for _, snippet := range s {
-		if _, ok := seen[snippet.Link]; ok {
+		if _, ok := seen[snippet.link]; ok {
 			continue
 		}
-		seen[snippet.Link] = struct{}{}
+		seen[snippet.link] = struct{}{}
 		result = append(result, snippet)
 	}
 
@@ -134,7 +163,7 @@ func (s Snippets) SortedByRank() Snippets {
 	copy(result, s)
 
 	sort.SliceStable(result, func(i, j int) bool {
-		return result[i].Rank < result[j].Rank
+		return result[i].rank < result[j].rank
 	})
 
 	return result

@@ -10,7 +10,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/Role1776/mcp-retrieval/app/internal/domain"
-	domainweb "github.com/Role1776/mcp-retrieval/app/internal/domain/web"
 	dto "github.com/Role1776/mcp-retrieval/app/internal/dto/web"
 )
 
@@ -23,7 +22,7 @@ func TestSearch(t *testing.T) {
 				Query:    "go",
 				Status:   "ok",
 				Count:    1,
-				Snippets: domainweb.Snippets{{Rank: 1, Title: "Go", Link: "https://go.dev", Snippet: "the language"}},
+				Snippets: []dto.Snippet{{Rank: 1, Title: "Go", Link: "https://go.dev", Snippet: "the language"}},
 			},
 		},
 		Metadata: dto.SearchMetadata{TotalRequestTimeMs: 12},

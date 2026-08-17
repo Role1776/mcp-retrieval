@@ -10,7 +10,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/Role1776/mcp-retrieval/app/internal/domain"
-	domainweb "github.com/Role1776/mcp-retrieval/app/internal/domain/web"
 	dto "github.com/Role1776/mcp-retrieval/app/internal/dto/web"
 )
 
@@ -22,7 +21,7 @@ func TestScrape(t *testing.T) {
 			{
 				URL:         "https://go.dev",
 				Status:      "ok",
-				ScrapedData: domainweb.Document{Title: "Go", Markdown: "body"},
+				ScrapedData: dto.Document{Title: "Go", Markdown: "body"},
 			},
 		},
 		Metadata: dto.ScrapeMetadata{TotalRequestTimeMs: 12},

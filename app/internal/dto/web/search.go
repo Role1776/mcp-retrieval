@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/Role1776/mcp-retrieval/app/internal/domain/web"
+	"github.com/google/uuid"
 )
 
 type SearchRequest struct {
@@ -17,11 +17,21 @@ type SearchResponse struct {
 }
 
 type Result struct {
-	Query       string       `json:"query"`
-	Status      string       `json:"status"`
-	Count       int          `json:"count"`
-	Snippets    web.Snippets `json:"snippets"`
-	TotalTimeMs int64        `json:"total_time_ms"`
+	Query       string    `json:"query"`
+	Status      string    `json:"status"`
+	Count       int       `json:"count"`
+	Snippets    []Snippet `json:"snippets"`
+	TotalTimeMs int64     `json:"total_time_ms"`
+}
+
+type Snippet struct {
+	ID      uuid.UUID `json:"id"`
+	Link    string    `json:"link"`
+	Title   string    `json:"title"`
+	Rank    int       `json:"rank"`
+	Source  string    `json:"source"`
+	Snippet string    `json:"snippet"`
+	Favicon string    `json:"favicon"`
 }
 
 type SearchMetadata struct {

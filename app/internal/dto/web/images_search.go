@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/Role1776/mcp-retrieval/app/internal/domain/web"
+	"github.com/google/uuid"
 )
 
 type ImagesSearchRequest struct {
@@ -22,9 +22,16 @@ type ImagesMetadata struct {
 }
 
 type ImagesResult struct {
-	Query       string     `json:"query"`
-	Status      string     `json:"status"`
-	Count       int        `json:"count"`
-	Images      web.Images `json:"images"`
-	TotalTimeMs int64      `json:"total_time_ms"`
+	Query       string  `json:"query"`
+	Status      string  `json:"status"`
+	Count       int     `json:"count"`
+	Images      []Image `json:"images"`
+	TotalTimeMs int64   `json:"total_time_ms"`
+}
+
+type Image struct {
+	ID          uuid.UUID `json:"id"`
+	URL         string    `json:"url"`
+	PageURL     string    `json:"page_url"`
+	Description string    `json:"description"`
 }

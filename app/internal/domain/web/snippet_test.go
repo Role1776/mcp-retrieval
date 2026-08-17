@@ -27,18 +27,18 @@ func TestNewSnippet(t *testing.T) {
 				Favicon: "https://go.dev/favicon.ico",
 			},
 			want: Snippet{
-				Link:    "https://go.dev",
-				Title:   "Go",
-				Rank:    1,
-				Source:  "go.dev",
-				Snippet: "the language",
-				Favicon: "https://go.dev/favicon.ico",
+				link:    "https://go.dev",
+				title:   "Go",
+				rank:    1,
+				source:  "go.dev",
+				snippet: "the language",
+				favicon: "https://go.dev/favicon.ico",
 			},
 		},
 		{
 			name:  "favicon is optional",
 			props: SnippetProps{Link: "https://go.dev", Title: "Go", Rank: 1, Source: "go.dev", Snippet: "the language"},
-			want:  Snippet{Link: "https://go.dev", Title: "Go", Rank: 1, Source: "go.dev", Snippet: "the language"},
+			want:  Snippet{link: "https://go.dev", title: "Go", rank: 1, source: "go.dev", snippet: "the language"},
 		},
 		{
 			name:    "missing link",
@@ -86,9 +86,9 @@ func TestNewSnippet(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.NotEqual(t, uuid.Nil, snippet.ID)
+			require.NotEqual(t, uuid.Nil, snippet.id)
 
-			snippet.ID = uuid.Nil
+			snippet.id = uuid.Nil
 			assert.Equal(t, tc.want, snippet)
 		})
 	}
@@ -113,7 +113,7 @@ func TestSnippetHost(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			// act
-			host := Snippet{Link: tc.link}.Host()
+			host := Snippet{link: tc.link}.Host()
 
 			// assert
 			assert.Equal(t, tc.want, host)
@@ -129,9 +129,9 @@ func TestSnippetReranked(t *testing.T) {
 
 		want int
 	}{
-		{name: "raises the rank", snippet: Snippet{Rank: 1}, rank: 7, want: 7},
-		{name: "lowers the rank", snippet: Snippet{Rank: 9}, rank: 2, want: 2},
-		{name: "same rank", snippet: Snippet{Rank: 3}, rank: 3, want: 3},
+		{name: "raises the rank", snippet: Snippet{rank: 1}, rank: 7, want: 7},
+		{name: "lowers the rank", snippet: Snippet{rank: 9}, rank: 2, want: 2},
+		{name: "same rank", snippet: Snippet{rank: 3}, rank: 3, want: 3},
 	}
 
 	for _, tc := range cases {
@@ -143,7 +143,7 @@ func TestSnippetReranked(t *testing.T) {
 			reranked := tc.snippet.Reranked(tc.rank)
 
 			// assert
-			assert.Equal(t, tc.want, reranked.Rank)
+			assert.Equal(t, tc.want, reranked.rank)
 			assert.Equal(t, original, tc.snippet, "the receiver must not be mutated")
 		})
 	}
@@ -158,12 +158,12 @@ func TestSnippetMarkdown(t *testing.T) {
 	}{
 		{
 			name:    "with text",
-			snippet: Snippet{Rank: 1, Title: "Go", Link: "https://go.dev", Snippet: "the language"},
+			snippet: Snippet{rank: 1, title: "Go", link: "https://go.dev", snippet: "the language"},
 			want:    "1. Go\nhttps://go.dev\nthe language",
 		},
 		{
 			name:    "without text",
-			snippet: Snippet{Rank: 2, Title: "Docs", Link: "https://go.dev/doc"},
+			snippet: Snippet{rank: 2, title: "Docs", link: "https://go.dev/doc"},
 			want:    "2. Docs\nhttps://go.dev/doc",
 		},
 	}
@@ -188,7 +188,7 @@ func TestSnippetsLen(t *testing.T) {
 	}{
 		{name: "nil", snippets: nil, want: 0},
 		{name: "empty", snippets: Snippets{}, want: 0},
-		{name: "two", snippets: Snippets{{Rank: 1}, {Rank: 2}}, want: 2},
+		{name: "two", snippets: Snippets{{rank: 1}, {rank: 2}}, want: 2},
 	}
 
 	for _, tc := range cases {
@@ -208,7 +208,7 @@ func TestSnippetsIsEmpty(t *testing.T) {
 	}{
 		{name: "nil", snippets: nil, want: true},
 		{name: "empty", snippets: Snippets{}, want: true},
-		{name: "one", snippets: Snippets{{Rank: 1}}, want: false},
+		{name: "one", snippets: Snippets{{rank: 1}}, want: false},
 	}
 
 	for _, tc := range cases {
@@ -220,7 +220,7 @@ func TestSnippetsIsEmpty(t *testing.T) {
 }
 
 func TestSnippetsLimit(t *testing.T) {
-	three := Snippets{{Title: "a"}, {Title: "b"}, {Title: "c"}}
+	three := Snippets{{title: "a"}, {title: "b"}, {title: "c"}}
 
 	cases := []struct {
 		name     string
@@ -229,7 +229,7 @@ func TestSnippetsLimit(t *testing.T) {
 
 		want Snippets
 	}{
-		{name: "keeps the first n", snippets: three, n: 2, want: Snippets{{Title: "a"}, {Title: "b"}}},
+		{name: "keeps the first n", snippets: three, n: 2, want: Snippets{{title: "a"}, {title: "b"}}},
 		{name: "n above the length keeps everything", snippets: three, n: 10, want: three},
 		{name: "n equal to the length keeps everything", snippets: three, n: 3, want: three},
 		{name: "zero n", snippets: three, n: 0, want: Snippets{}},
@@ -247,8 +247,8 @@ func TestSnippetsLimit(t *testing.T) {
 			assert.Equal(t, tc.want, limited)
 
 			if len(limited) > 0 {
-				limited[0].Title = "mutated"
-				assert.NotEqual(t, "mutated", tc.snippets[0].Title, "the result must not alias the receiver")
+				limited[0].title = "mutated"
+				assert.NotEqual(t, "mutated", tc.snippets[0].title, "the result must not alias the receiver")
 			}
 		})
 	}
@@ -263,18 +263,18 @@ func TestSnippetsDedupe(t *testing.T) {
 	}{
 		{
 			name:     "keeps the first occurrence of a link",
-			snippets: Snippets{{Link: "a", Title: "first"}, {Link: "b"}, {Link: "a", Title: "second"}},
-			want:     Snippets{{Link: "a", Title: "first"}, {Link: "b"}},
+			snippets: Snippets{{link: "a", title: "first"}, {link: "b"}, {link: "a", title: "second"}},
+			want:     Snippets{{link: "a", title: "first"}, {link: "b"}},
 		},
 		{
 			name:     "different titles under the same link collapse",
-			snippets: Snippets{{Link: "a", Title: "x"}, {Link: "a", Title: "y"}},
-			want:     Snippets{{Link: "a", Title: "x"}},
+			snippets: Snippets{{link: "a", title: "x"}, {link: "a", title: "y"}},
+			want:     Snippets{{link: "a", title: "x"}},
 		},
 		{
 			name:     "nothing to dedupe",
-			snippets: Snippets{{Link: "a"}, {Link: "b"}},
-			want:     Snippets{{Link: "a"}, {Link: "b"}},
+			snippets: Snippets{{link: "a"}, {link: "b"}},
+			want:     Snippets{{link: "a"}, {link: "b"}},
 		},
 		{name: "empty receiver", snippets: Snippets{}, want: Snippets{}},
 		{name: "nil receiver", snippets: nil, want: Snippets{}},
@@ -298,8 +298,8 @@ func TestSnippetsRerank(t *testing.T) {
 
 		want []int
 	}{
-		{name: "ranks start at one", snippets: Snippets{{Rank: 0}, {Rank: 0}, {Rank: 0}}, want: []int{1, 2, 3}},
-		{name: "existing ranks are overwritten in place order", snippets: Snippets{{Rank: 9}, {Rank: 4}}, want: []int{1, 2}},
+		{name: "ranks start at one", snippets: Snippets{{rank: 0}, {rank: 0}, {rank: 0}}, want: []int{1, 2, 3}},
+		{name: "existing ranks are overwritten in place order", snippets: Snippets{{rank: 9}, {rank: 4}}, want: []int{1, 2}},
 		{name: "empty receiver", snippets: Snippets{}, want: []int{}},
 		{name: "nil receiver", snippets: nil, want: []int{}},
 	}
@@ -315,7 +315,7 @@ func TestSnippetsRerank(t *testing.T) {
 			// assert
 			ranks := make([]int, 0, len(reranked))
 			for _, snippet := range reranked {
-				ranks = append(ranks, snippet.Rank)
+				ranks = append(ranks, snippet.rank)
 			}
 
 			assert.Equal(t, tc.want, ranks)
@@ -333,13 +333,13 @@ func TestSnippetsSortedByRank(t *testing.T) {
 	}{
 		{
 			name:     "sorts ascending",
-			snippets: Snippets{{Rank: 3, Title: "c"}, {Rank: 1, Title: "a"}, {Rank: 2, Title: "b"}},
-			want:     Snippets{{Rank: 1, Title: "a"}, {Rank: 2, Title: "b"}, {Rank: 3, Title: "c"}},
+			snippets: Snippets{{rank: 3, title: "c"}, {rank: 1, title: "a"}, {rank: 2, title: "b"}},
+			want:     Snippets{{rank: 1, title: "a"}, {rank: 2, title: "b"}, {rank: 3, title: "c"}},
 		},
 		{
 			name:     "equal ranks keep their order",
-			snippets: Snippets{{Rank: 1, Title: "first"}, {Rank: 1, Title: "second"}},
-			want:     Snippets{{Rank: 1, Title: "first"}, {Rank: 1, Title: "second"}},
+			snippets: Snippets{{rank: 1, title: "first"}, {rank: 1, title: "second"}},
+			want:     Snippets{{rank: 1, title: "first"}, {rank: 1, title: "second"}},
 		},
 		{name: "empty receiver", snippets: Snippets{}, want: Snippets{}},
 		{name: "nil receiver", snippets: nil, want: Snippets{}},
@@ -370,14 +370,14 @@ func TestSnippetsMarkdown(t *testing.T) {
 		{
 			name: "entries are separated by a blank line",
 			snippets: Snippets{
-				{Rank: 1, Title: "Go", Link: "https://go.dev", Snippet: "the language"},
-				{Rank: 2, Title: "Docs", Link: "https://go.dev/doc"},
+				{rank: 1, title: "Go", link: "https://go.dev", snippet: "the language"},
+				{rank: 2, title: "Docs", link: "https://go.dev/doc"},
 			},
 			want: "1. Go\nhttps://go.dev\nthe language\n\n2. Docs\nhttps://go.dev/doc",
 		},
 		{
 			name:     "single entry has no separator",
-			snippets: Snippets{{Rank: 1, Title: "Go", Link: "https://go.dev"}},
+			snippets: Snippets{{rank: 1, title: "Go", link: "https://go.dev"}},
 			want:     "1. Go\nhttps://go.dev",
 		},
 		{name: "empty receiver", snippets: Snippets{}, want: ""},

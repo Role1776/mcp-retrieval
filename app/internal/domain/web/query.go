@@ -3,9 +3,9 @@ package web
 import (
 	"net/url"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/Role1776/mcp-retrieval/app/internal/domain"
+	"github.com/Role1776/mcp-retrieval/app/internal/pkg/validator"
 )
 
 const (
@@ -18,18 +18,18 @@ type Query struct {
 	value string
 }
 
-func NewQuery(raw string) (Query, error) {
-	value := strings.TrimSpace(raw)
+type QueryProps struct {
+	Value string `json:"value" validate:"required,gt=0,max=512"`
+}
 
-	if value == "" {
-		return Query{}, domain.ErrEmptyQuery
+func NewQuery(props QueryProps) (Query, error) {
+	props.Value = strings.TrimSpace(props.Value)
+
+	if err := validator.Validate(props); err != nil {
+		return Query{}, domain.ErrInvalidRequest
 	}
 
-	if utf8.RuneCountInString(value) > maxQueryLength {
-		return Query{}, domain.ErrQueryTooLong
-	}
-
-	return Query{value: value}, nil
+	return Query{value: props.Value}, nil
 }
 
 func (q Query) String() string {
@@ -45,7 +45,7 @@ type Queries []Query
 func NewQueries(raw []string) (Queries, error) {
 	queries := make(Queries, 0, len(raw))
 	for _, r := range raw {
-		query, err := NewQuery(r)
+		query, err := NewQuery(QueryProps{Value: r})
 		if err != nil {
 			return nil, err
 		}

@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/Role1776/mcp-retrieval/app/internal/domain/web"
+	"github.com/google/uuid"
 )
 
 type ScrapeRequest struct {
@@ -18,10 +18,25 @@ type ScrapeResponse struct {
 }
 
 type ScrapeResult struct {
-	URL         string       `json:"url"`
-	Status      string       `json:"status"`
-	ScrapedData web.Document `json:"scraped_data"`
-	TotalTimeMs int64        `json:"total_time_ms"`
+	URL         string   `json:"url"`
+	Status      string   `json:"status"`
+	ScrapedData Document `json:"scraped_data"`
+	TotalTimeMs int64    `json:"total_time_ms"`
+}
+
+type Document struct {
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Byline    string    `json:"byline"`
+	Markdown  string    `json:"markdown"`
+	Length    int       `json:"length"`
+	Excerpt   string    `json:"excerpt"`
+	SiteName  string    `json:"site_name"`
+	MainImage string    `json:"main_image"`
+	AllImages []string  `json:"all_images"`
+	Favicon   string    `json:"favicon"`
+	Language  string    `json:"language"`
+	Truncated bool      `json:"truncated"`
 }
 
 type ScrapeMetadata struct {

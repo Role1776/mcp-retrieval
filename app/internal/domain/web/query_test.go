@@ -163,16 +163,16 @@ func TestNewQuery(t *testing.T) {
 			raw:  strings.Repeat("é", maxQueryLength),
 			want: strings.Repeat("é", maxQueryLength),
 		},
-		{name: "empty", raw: "", wantErr: domain.ErrEmptyQuery},
-		{name: "whitespace only", raw: " \t\n", wantErr: domain.ErrEmptyQuery},
-		{name: "ascii over the limit", raw: strings.Repeat("a", maxQueryLength+1), wantErr: domain.ErrQueryTooLong},
-		{name: "non-ascii over the limit", raw: strings.Repeat("é", maxQueryLength+1), wantErr: domain.ErrQueryTooLong},
+		{name: "empty", raw: "", wantErr: domain.ErrInvalidRequest},
+		{name: "whitespace only", raw: " \t\n", wantErr: domain.ErrInvalidRequest},
+		{name: "ascii over the limit", raw: strings.Repeat("a", maxQueryLength+1), wantErr: domain.ErrInvalidRequest},
+		{name: "non-ascii over the limit", raw: strings.Repeat("é", maxQueryLength+1), wantErr: domain.ErrInvalidRequest},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			// act
-			query, err := NewQuery(tc.raw)
+			query, err := NewQuery(QueryProps{Value: tc.raw})
 
 			// assert
 			if tc.wantErr != nil {
@@ -198,11 +198,11 @@ func TestNewQueries(t *testing.T) {
 		wantErr error
 	}{
 		{name: "all valid", raw: []string{" first ", "second"}, want: []string{"first", "second"}},
-		{name: "one invalid rejects the batch", raw: []string{"first", "  "}, wantErr: domain.ErrEmptyQuery},
+		{name: "one invalid rejects the batch", raw: []string{"first", "  "}, wantErr: domain.ErrInvalidRequest},
 		{
 			name:    "one too long rejects the batch",
 			raw:     []string{"first", strings.Repeat("a", maxQueryLength+1)},
-			wantErr: domain.ErrQueryTooLong,
+			wantErr: domain.ErrInvalidRequest,
 		},
 		{name: "empty input", raw: nil, wantErr: domain.ErrEmptyQuery},
 		{name: "empty slice", raw: []string{}, wantErr: domain.ErrEmptyQuery},

@@ -35,6 +35,26 @@ func TestNewDocument(t *testing.T) {
 				Language:  "en",
 			},
 			want: Document{
+				title:     "Go",
+				byline:    "The Go Authors",
+				markdown:  "the language",
+				length:    12,
+				excerpt:   "an excerpt",
+				siteName:  "go.dev",
+				mainImage: "https://go.dev/a.png",
+				allImages: []string{"https://go.dev/a.png"},
+				favicon:   "https://go.dev/favicon.ico",
+				language:  "en",
+			},
+		},
+		{
+			name:  "only the required fields",
+			props: DocumentProps{Title: "Go", Markdown: "the language", Length: 12},
+			want:  Document{title: "Go", markdown: "the language", length: 12},
+		},
+		{
+			name: "nil all images",
+			props: DocumentProps{
 				Title:     "Go",
 				Byline:    "The Go Authors",
 				Markdown:  "the language",
@@ -42,21 +62,43 @@ func TestNewDocument(t *testing.T) {
 				Excerpt:   "an excerpt",
 				SiteName:  "go.dev",
 				MainImage: "https://go.dev/a.png",
-				AllImages: []string{"https://go.dev/a.png"},
+				AllImages: nil,
 				Favicon:   "https://go.dev/favicon.ico",
 				Language:  "en",
 			},
-		},
-		{
-			name:  "only the required fields",
-			props: DocumentProps{Title: "Go", Markdown: "the language", Length: 12},
-			want:  Document{Title: "Go", Markdown: "the language", Length: 12},
+			want: Document{
+				title:     "Go",
+				byline:    "The Go Authors",
+				markdown:  "the language",
+				length:    12,
+				excerpt:   "an excerpt",
+				siteName:  "go.dev",
+				mainImage: "https://go.dev/a.png",
+				allImages: nil,
+				favicon:   "https://go.dev/favicon.ico",
+				language:  "en",
+			},
 		},
 		{name: "missing title", props: DocumentProps{Markdown: "the language", Length: 12}, wantErr: true},
 		{name: "missing markdown", props: DocumentProps{Title: "Go", Length: 12}, wantErr: true},
 		{
 			name:    "negative length",
 			props:   DocumentProps{Title: "Go", Markdown: "the language", Length: -1},
+			wantErr: true,
+		},
+		{
+			name:    "invalid main image url",
+			props:   DocumentProps{Title: "Go", Markdown: "the language", Length: 12, MainImage: "invalid-url"},
+			wantErr: true,
+		},
+		{
+			name:    "invalid all images url",
+			props:   DocumentProps{Title: "Go", Markdown: "the language", Length: 12, AllImages: []string{"invalid-url"}},
+			wantErr: true,
+		},
+		{
+			name:    "invalid favicon url",
+			props:   DocumentProps{Title: "Go", Markdown: "the language", Length: 12, Favicon: "invalid-url"},
 			wantErr: true,
 		},
 		{name: "empty props", props: DocumentProps{}, wantErr: true},
@@ -76,9 +118,9 @@ func TestNewDocument(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.NotEqual(t, uuid.Nil, doc.ID)
+			require.NotEqual(t, uuid.Nil, doc.id)
 
-			doc.ID = uuid.Nil
+			doc.id = uuid.Nil
 			assert.Equal(t, tc.want, doc)
 		})
 	}
@@ -100,7 +142,7 @@ func TestDocumentIsEmpty(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			// arrange
-			doc := Document{Markdown: tc.markdown}
+			doc := Document{markdown: tc.markdown}
 
 			// act & assert
 			assert.Equal(t, tc.want, doc.IsEmpty())
@@ -175,14 +217,14 @@ func TestDocumentRemoveAllLinks(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			// arrange
-			doc := Document{Markdown: tc.markdown, Length: tc.length}
+			doc := Document{markdown: tc.markdown, length: tc.length}
 
 			// act
 			doc.RemoveAllLinks()
 
 			// assert
-			assert.Equal(t, tc.want, doc.Markdown)
-			assert.Equal(t, tc.wantLength, doc.Length)
+			assert.Equal(t, tc.want, doc.markdown)
+			assert.Equal(t, tc.wantLength, doc.length)
 		})
 	}
 }
@@ -230,7 +272,7 @@ func TestDocumentTruncate(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			// arrange
-			doc := Document{Markdown: tc.markdown}
+			doc := Document{markdown: tc.markdown}
 
 			// act
 			err := doc.Truncate(tc.limit)
@@ -238,29 +280,29 @@ func TestDocumentTruncate(t *testing.T) {
 			// assert
 			if tc.wantErr != nil {
 				require.ErrorIs(t, err, tc.wantErr)
-				assert.Equal(t, tc.markdown, doc.Markdown, "a failed truncation must leave the document alone")
-				assert.False(t, doc.Truncated)
-				assert.Zero(t, doc.Length)
+				assert.Equal(t, tc.markdown, doc.markdown, "a failed truncation must leave the document alone")
+				assert.False(t, doc.truncated)
+				assert.Zero(t, doc.length)
 
 				return
 			}
 
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantTruncated, doc.Truncated)
+			assert.Equal(t, tc.wantTruncated, doc.truncated)
 
 			if !tc.wantTruncated {
-				assert.Equal(t, tc.markdown, doc.Markdown)
-				assert.Zero(t, doc.Length, "Length is only recomputed on truncation")
+				assert.Equal(t, tc.markdown, doc.markdown)
+				assert.Zero(t, doc.length, "Length is only recomputed on truncation")
 
 				return
 			}
 
-			require.True(t, strings.HasSuffix(doc.Markdown, truncationSuffix))
+			require.True(t, strings.HasSuffix(doc.markdown, truncationSuffix))
 
-			body := strings.TrimSuffix(doc.Markdown, truncationSuffix)
+			body := strings.TrimSuffix(doc.markdown, truncationSuffix)
 			assert.LessOrEqual(t, utf8.RuneCountInString(body), tc.limit)
 			assert.True(t, strings.HasPrefix(tc.markdown, body), "truncation must keep the beginning of the text")
-			assert.Equal(t, utf8.RuneCountInString(doc.Markdown), doc.Length, "Length counts the suffix too")
+			assert.Equal(t, utf8.RuneCountInString(doc.markdown), doc.length, "Length counts the suffix too")
 		})
 	}
 }
@@ -274,22 +316,22 @@ func TestDocumentText(t *testing.T) {
 	}{
 		{
 			name: "title and body only",
-			doc:  Document{Title: "Go", Markdown: "the language"},
+			doc:  Document{title: "Go", markdown: "the language"},
 			want: "# Go\n\nthe language",
 		},
 		{
 			name: "with the site name",
-			doc:  Document{Title: "Go", SiteName: "go.dev", Markdown: "the language"},
+			doc:  Document{title: "Go", siteName: "go.dev", markdown: "the language"},
 			want: "# Go\nsource: go.dev\n\nthe language",
 		},
 		{
 			name: "with the byline",
-			doc:  Document{Title: "Go", Byline: "The Go Authors", Markdown: "the language"},
+			doc:  Document{title: "Go", byline: "The Go Authors", markdown: "the language"},
 			want: "# Go\nauthor: The Go Authors\n\nthe language",
 		},
 		{
 			name: "the site name comes before the byline",
-			doc:  Document{Title: "Go", SiteName: "go.dev", Byline: "The Go Authors", Markdown: "the language"},
+			doc:  Document{title: "Go", siteName: "go.dev", byline: "The Go Authors", markdown: "the language"},
 			want: "# Go\nsource: go.dev\nauthor: The Go Authors\n\nthe language",
 		},
 		{

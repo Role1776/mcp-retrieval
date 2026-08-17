@@ -9,45 +9,59 @@ import (
 )
 
 type Image struct {
-	ID          uuid.UUID `json:"id" validate:"required"`
-	URL         string    `json:"url" validate:"required"`
-	PageURL     string    `json:"page_url" validate:"required"`
-	Description string    `json:"description" validate:"omitempty"`
+	id          uuid.UUID
+	url         string
+	pageURL     string
+	description string
 }
 
 type ImageProps struct {
-	URL         string
-	PageURL     string
-	Description string
+	URL         string `validate:"required"`
+	PageURL     string `validate:"required"`
+	Description string `validate:"omitempty"`
 }
 
 func NewImage(props ImageProps) (Image, error) {
+	if err := validator.Validate(props); err != nil {
+		return Image{}, err
+	}
+
 	id, err := uuid.NewV7()
 	if err != nil {
 		return Image{}, err
 	}
 
-	image := Image{
-		ID:          id,
-		URL:         props.URL,
-		PageURL:     props.PageURL,
-		Description: props.Description,
-	}
+	return Image{
+		id:          id,
+		url:         props.URL,
+		pageURL:     props.PageURL,
+		description: props.Description,
+	}, nil
+}
 
-	if err := validator.Validate(image); err != nil {
-		return Image{}, err
-	}
+type ImageView struct {
+	ID          uuid.UUID
+	URL         string
+	PageURL     string
+	Description string
+}
 
-	return image, nil
+func (i Image) View() ImageView {
+	return ImageView{
+		ID:          i.id,
+		URL:         i.url,
+		PageURL:     i.pageURL,
+		Description: i.description,
+	}
 }
 
 func (i Image) Markdown() string {
-	alt := i.Description
+	alt := i.description
 	if alt == "" {
 		alt = "image"
 	}
 
-	return "![" + alt + "](" + i.URL + ")"
+	return "![" + alt + "](" + i.url + ")"
 }
 
 type Images []Image
@@ -58,6 +72,15 @@ func (i Images) Len() int {
 
 func (i Images) IsEmpty() bool {
 	return len(i) == 0
+}
+
+func (i Images) Views() []ImageView {
+	views := make([]ImageView, 0, len(i))
+	for _, image := range i {
+		views = append(views, image.View())
+	}
+
+	return views
 }
 
 func (i Images) Limit(n int) Images {
@@ -76,10 +99,10 @@ func (i Images) Dedupe() Images {
 	result := make(Images, 0, len(i))
 
 	for _, image := range i {
-		if _, ok := seen[image.URL]; ok {
+		if _, ok := seen[image.url]; ok {
 			continue
 		}
-		seen[image.URL] = struct{}{}
+		seen[image.url] = struct{}{}
 		result = append(result, image)
 	}
 

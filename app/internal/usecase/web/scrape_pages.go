@@ -80,7 +80,7 @@ func (u *UseCase) executeOneScrape(ctx context.Context, link web.Link, req dto.S
 	return dto.ScrapeResult{
 		URL:         link.String(),
 		Status:      status,
-		ScrapedData: doc,
+		ScrapedData: toDocument(doc),
 		TotalTimeMs: time.Since(start).Milliseconds(),
 	}, err
 }

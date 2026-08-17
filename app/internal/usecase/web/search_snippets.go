@@ -76,7 +76,7 @@ func (u *UseCase) executeOneQuery(ctx context.Context, query web.Query, req dto.
 		Query:       query.String(),
 		Status:      status,
 		Count:       resSnippets.Len(),
-		Snippets:    resSnippets,
+		Snippets:    toSnippets(resSnippets),
 		TotalTimeMs: time.Since(start).Milliseconds(),
 	}, err
 }

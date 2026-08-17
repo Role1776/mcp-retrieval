@@ -10,7 +10,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/Role1776/mcp-retrieval/app/internal/domain"
-	domainweb "github.com/Role1776/mcp-retrieval/app/internal/domain/web"
 	dto "github.com/Role1776/mcp-retrieval/app/internal/dto/web"
 )
 
@@ -23,7 +22,7 @@ func TestSearchImages(t *testing.T) {
 				Query:  "cats",
 				Status: "ok",
 				Count:  1,
-				Images: domainweb.Images{{URL: "https://img/1.png", PageURL: "https://page/1", Description: "cat"}},
+				Images: []dto.Image{{URL: "https://img/1.png", PageURL: "https://page/1", Description: "cat"}},
 			},
 		},
 		Metadata: dto.ImagesMetadata{TotalRequestTimeMs: 12},

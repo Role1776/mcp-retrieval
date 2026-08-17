@@ -24,15 +24,15 @@ func TestNewImage(t *testing.T) {
 				Description: "a picture",
 			},
 			want: Image{
-				URL:         "https://example.com/a.png",
-				PageURL:     "https://example.com/page",
-				Description: "a picture",
+				url:         "https://example.com/a.png",
+				pageURL:     "https://example.com/page",
+				description: "a picture",
 			},
 		},
 		{
 			name:  "description is optional",
 			props: ImageProps{URL: "https://example.com/a.png", PageURL: "https://example.com/page"},
-			want:  Image{URL: "https://example.com/a.png", PageURL: "https://example.com/page"},
+			want:  Image{url: "https://example.com/a.png", pageURL: "https://example.com/page"},
 		},
 		{
 			name:    "missing url",
@@ -61,9 +61,9 @@ func TestNewImage(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.NotEqual(t, uuid.Nil, image.ID)
+			require.NotEqual(t, uuid.Nil, image.id)
 
-			image.ID = uuid.Nil
+			image.id = uuid.Nil
 			assert.Equal(t, tc.want, image)
 		})
 	}
@@ -78,12 +78,12 @@ func TestImageMarkdown(t *testing.T) {
 	}{
 		{
 			name:  "description becomes the alt text",
-			image: Image{URL: "https://example.com/a.png", Description: "a picture"},
+			image: Image{url: "https://example.com/a.png", description: "a picture"},
 			want:  "![a picture](https://example.com/a.png)",
 		},
 		{
 			name:  "empty description falls back to a placeholder",
-			image: Image{URL: "https://example.com/a.png"},
+			image: Image{url: "https://example.com/a.png"},
 			want:  "![image](https://example.com/a.png)",
 		},
 	}
@@ -105,7 +105,7 @@ func TestImagesLen(t *testing.T) {
 	}{
 		{name: "nil", images: nil, want: 0},
 		{name: "empty", images: Images{}, want: 0},
-		{name: "two", images: Images{{URL: "a"}, {URL: "b"}}, want: 2},
+		{name: "two", images: Images{{url: "a"}, {url: "b"}}, want: 2},
 	}
 
 	for _, tc := range cases {
@@ -125,7 +125,7 @@ func TestImagesIsEmpty(t *testing.T) {
 	}{
 		{name: "nil", images: nil, want: true},
 		{name: "empty", images: Images{}, want: true},
-		{name: "one", images: Images{{URL: "a"}}, want: false},
+		{name: "one", images: Images{{url: "a"}}, want: false},
 	}
 
 	for _, tc := range cases {
@@ -137,7 +137,7 @@ func TestImagesIsEmpty(t *testing.T) {
 }
 
 func TestImagesLimit(t *testing.T) {
-	three := Images{{URL: "a"}, {URL: "b"}, {URL: "c"}}
+	three := Images{{url: "a"}, {url: "b"}, {url: "c"}}
 
 	cases := []struct {
 		name   string
@@ -146,7 +146,7 @@ func TestImagesLimit(t *testing.T) {
 
 		want Images
 	}{
-		{name: "keeps the first n", images: three, n: 2, want: Images{{URL: "a"}, {URL: "b"}}},
+		{name: "keeps the first n", images: three, n: 2, want: Images{{url: "a"}, {url: "b"}}},
 		{name: "n above the length keeps everything", images: three, n: 10, want: three},
 		{name: "n equal to the length keeps everything", images: three, n: 3, want: three},
 		{name: "zero n", images: three, n: 0, want: Images{}},
@@ -164,8 +164,8 @@ func TestImagesLimit(t *testing.T) {
 			assert.Equal(t, tc.want, limited)
 
 			if len(limited) > 0 {
-				limited[0].URL = "mutated"
-				assert.NotEqual(t, "mutated", tc.images[0].URL, "the result must not alias the receiver")
+				limited[0].url = "mutated"
+				assert.NotEqual(t, "mutated", tc.images[0].url, "the result must not alias the receiver")
 			}
 		})
 	}
@@ -180,18 +180,18 @@ func TestImagesDedupe(t *testing.T) {
 	}{
 		{
 			name:   "keeps the first occurrence of a url",
-			images: Images{{URL: "a", Description: "first"}, {URL: "b"}, {URL: "a", Description: "second"}},
-			want:   Images{{URL: "a", Description: "first"}, {URL: "b"}},
+			images: Images{{url: "a", description: "first"}, {url: "b"}, {url: "a", description: "second"}},
+			want:   Images{{url: "a", description: "first"}, {url: "b"}},
 		},
 		{
 			name:   "the same url on different pages collapses",
-			images: Images{{URL: "a", PageURL: "p1"}, {URL: "a", PageURL: "p2"}},
-			want:   Images{{URL: "a", PageURL: "p1"}},
+			images: Images{{url: "a", pageURL: "p1"}, {url: "a", pageURL: "p2"}},
+			want:   Images{{url: "a", pageURL: "p1"}},
 		},
 		{
 			name:   "nothing to dedupe",
-			images: Images{{URL: "a"}, {URL: "b"}},
-			want:   Images{{URL: "a"}, {URL: "b"}},
+			images: Images{{url: "a"}, {url: "b"}},
+			want:   Images{{url: "a"}, {url: "b"}},
 		},
 		{name: "empty receiver", images: Images{}, want: Images{}},
 		{name: "nil receiver", images: nil, want: Images{}},
@@ -215,14 +215,14 @@ func TestImagesMarkdown(t *testing.T) {
 		{
 			name: "entries are separated by a newline",
 			images: Images{
-				{URL: "https://example.com/a.png", Description: "a"},
-				{URL: "https://example.com/b.png"},
+				{url: "https://example.com/a.png", description: "a"},
+				{url: "https://example.com/b.png"},
 			},
 			want: "![a](https://example.com/a.png)\n![image](https://example.com/b.png)",
 		},
 		{
 			name:   "single entry has no separator",
-			images: Images{{URL: "https://example.com/a.png", Description: "a"}},
+			images: Images{{url: "https://example.com/a.png", description: "a"}},
 			want:   "![a](https://example.com/a.png)",
 		},
 		{name: "empty receiver", images: Images{}, want: ""},
