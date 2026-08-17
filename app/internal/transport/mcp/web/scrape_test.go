@@ -49,7 +49,7 @@ func TestScrape(t *testing.T) {
 		{
 			name:        "domain error is mapped",
 			err:         domain.ErrRobotsDenied,
-			wantIsError: true,
+			wantIsError: false,
 			wantText:    "robots.txt denied",
 			wantRes:     dto.ScrapeResponse{},
 		},
@@ -85,14 +85,14 @@ func TestScrape(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, tc.wantRes, res)
 
-			if !tc.wantIsError {
+			if tc.err == nil {
 				assert.Nil(t, result)
 
 				return
 			}
 
 			require.NotNil(t, result)
-			assert.True(t, result.IsError)
+			assert.Equal(t, tc.wantIsError, result.IsError)
 			assert.Equal(t, tc.wantText, resultText(t, result))
 		})
 	}

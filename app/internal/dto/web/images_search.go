@@ -5,7 +5,7 @@ import (
 )
 
 type ImagesSearchRequest struct {
-	Queries   []string `json:"queries" jsonschema:"queries for image search" validate:"required"`
+	Queries   []string `json:"queries" jsonschema:"queries in English for image search" validate:"required"`
 	MaxImages int      `json:"max_images,omitempty" jsonschema:"maximum number of images per query"`
 	TimeoutMs int64    `json:"timeout_ms,omitempty" jsonschema:"timeout for the whole call in milliseconds"`
 	Date      string   `json:"date,omitempty" jsonschema:"filter results by freshness: 'd' past day, 'w' past week, 'm' past month, 'y' past year; empty means all time"`

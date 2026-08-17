@@ -5,7 +5,7 @@ import (
 )
 
 type SearchRequest struct {
-	Queries    []string `json:"queries" jsonschema:"search queries, executed in parallel" validate:"required"`
+	Queries    []string `json:"queries" jsonschema:"search queries in English, executed in parallel" validate:"required"`
 	MaxResults int      `json:"max_results,omitempty" jsonschema:"maximum number of snippets per query"`
 	TimeoutMs  int64    `json:"timeout_ms,omitempty" jsonschema:"timeout for the whole call in milliseconds"`
 	Date       string   `json:"date,omitempty" jsonschema:"filter results by freshness: 'd' past day, 'w' past week, 'm' past month, 'y' past year; empty means all time"`

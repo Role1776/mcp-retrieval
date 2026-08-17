@@ -40,7 +40,8 @@ func (h *Handler) RegisterTools(s *mcpsdk.Server) {
 		},
 		Title: "Web search",
 		Description: "Searches the web for one or more queries and returns snippets with links. " +
-			"Queries run in parallel. For images use the '" + toolSearchImages + "' tool; " +
+			"Queries run in parallel. IMPORTANT: Always write search queries in English for best results and relevance. " +
+			"For images use the '" + toolSearchImages + "' tool; " +
 			"both tools can be called in the same turn when a query needs text and images.\n\n" +
 			"Freshness: set the 'date' field to restrict results by recency — 'd' (past day), " +
 			"'w' (past week), 'm' (past month), 'y' (past year). Use it to prefer the most recent " +
@@ -59,7 +60,8 @@ func (h *Handler) RegisterTools(s *mcpsdk.Server) {
 			ReadOnlyHint: true,
 		},
 		Title: "Web image search",
-		Description: "Searches for images by one or more queries, executed in parallel.\n\n" +
+		Description: "Searches for images by one or more queries, executed in parallel. " +
+			"IMPORTANT: Queries must be in English ONLY.\n\n" +
 			"Freshness: set the 'date' field to restrict results by recency — 'd' (past day), " +
 			"'w' (past week), 'm' (past month), 'y' (past year); leave it empty for all time.\n\n" +
 			"Query operators can be embedded in the query string: 'site:example.com term' limits to one site, " +
