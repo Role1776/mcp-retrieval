@@ -22,14 +22,9 @@ func TestNewImage(t *testing.T) {
 			want:  Image{url: "https://example.com/a.png", pageURL: "https://example.com/page", description: "a picture"},
 		},
 		{
-			name:    "invalid url",
-			props:   ImageProps{URL: "invalid-url", PageURL: "https://example.com/page"},
-			wantErr: true,
-		},
-		{
-			name:    "invalid page url",
-			props:   ImageProps{URL: "https://example.com/a.png", PageURL: "invalid-url"},
-			wantErr: true,
+			name:  "non-http url is accepted",
+			props: ImageProps{URL: "invalid-url", PageURL: "https://example.com/page"},
+			want:  Image{url: "invalid-url", pageURL: "https://example.com/page"},
 		},
 		{
 			name:  "description is optional",
@@ -37,13 +32,13 @@ func TestNewImage(t *testing.T) {
 			want:  Image{url: "https://example.com/a.png", pageURL: "https://example.com/page"},
 		},
 		{
-			name:    "missing url",
-			props:   ImageProps{PageURL: "https://example.com/page", Description: "a picture"},
-			wantErr: true,
+			name:  "page url is optional",
+			props: ImageProps{URL: "https://example.com/a.png", Description: "a picture"},
+			want:  Image{url: "https://example.com/a.png", description: "a picture"},
 		},
 		{
-			name:    "missing page url",
-			props:   ImageProps{URL: "https://example.com/a.png", Description: "a picture"},
+			name:    "missing url",
+			props:   ImageProps{PageURL: "https://example.com/page", Description: "a picture"},
 			wantErr: true,
 		},
 		{

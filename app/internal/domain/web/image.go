@@ -16,8 +16,8 @@ type Image struct {
 }
 
 type ImageProps struct {
-	URL         string `validate:"required,url"`
-	PageURL     string `validate:"required,url"`
+	URL         string `validate:"required"`
+	PageURL     string `validate:"omitempty"`
 	Description string `validate:"omitempty"`
 }
 

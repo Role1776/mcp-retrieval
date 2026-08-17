@@ -14,4 +14,5 @@ var (
 	ErrNoChunks             = errors.New("no chunks")
 	ErrAllURLsFailed        = errors.New("all urls failed")
 	ErrAllQueriesFailed     = errors.New("all queries failed")
+	ErrNoRelevantImages     = errors.New("no relevant images")
 )

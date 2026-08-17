@@ -8,9 +8,10 @@ import (
 )
 
 const (
-	statusSuccess = "success"
-	statusFailed  = "failed"
-	statusTimeout = "timeout"
+	statusSuccess    = "success"
+	statusFailed     = "failed"
+	statusTimeout    = "timeout"
+	statusNoRelevant = "no relevant"
 )
 
 type retrieval interface {

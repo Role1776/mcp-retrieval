@@ -59,26 +59,43 @@ func (u *UseCase) SearchImages(ctx context.Context, req dto.ImagesSearchRequest)
 func (u *UseCase) executeOneImagesQuery(ctx context.Context, query web.Query, req dto.ImagesSearchRequest) (dto.ImagesResult, error) {
 	const op = "usecase.web.executeOneImagesQuery"
 	start := time.Now()
-	status := statusSuccess
 
 	images, err := u.retriever.Images(ctx, query, req.Date)
 	if err != nil {
-		status = statusFailed
-		if errors.Is(err, context.DeadlineExceeded) {
-			status = statusTimeout
+		if errors.Is(err, domain.ErrNoRelevantImages) {
+			return dto.ImagesResult{
+				Query:       query.String(),
+				Status:      statusNoRelevant,
+				TotalTimeMs: time.Since(start).Milliseconds(),
+			}, nil
 		}
+
+		if errors.Is(err, context.DeadlineExceeded) {
+			return dto.ImagesResult{
+				Query:       query.String(),
+				Status:      statusTimeout,
+				TotalTimeMs: time.Since(start).Milliseconds(),
+			}, nil
+		}
+
 		u.logger.Error("images search error", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
+
+		return dto.ImagesResult{
+			Query:       query.String(),
+			Status:      statusFailed,
+			TotalTimeMs: time.Since(start).Milliseconds(),
+		}, err
 	}
 
 	resImages := images.Dedupe().Limit(limits.ResolveMax(req.MaxImages, u.cfg.DefaultImages, u.cfg.MaxImages))
 
 	return dto.ImagesResult{
 		Query:       query.String(),
-		Status:      status,
+		Status:      statusSuccess,
 		Count:       resImages.Len(),
 		Images:      toImages(resImages),
 		TotalTimeMs: time.Since(start).Milliseconds(),
-	}, err
+	}, nil
 }
 
 func (u *UseCase) validateImagesSearchRequest(req dto.ImagesSearchRequest) error {

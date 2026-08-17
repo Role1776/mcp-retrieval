@@ -19,6 +19,9 @@ func (r *Retrieval) Images(ctx context.Context, query web.Query, date string) (w
 		if errors.Is(err, retrieval.ErrUnexpectedStatusCode) {
 			return nil, fmt.Errorf("%s: %w", op, domain.ErrUnexpectedStatusCode)
 		}
+		if errors.Is(err, retrieval.ErrNoRelevantImages) {
+			return nil, fmt.Errorf("%s: %w", op, domain.ErrNoRelevantImages)
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
