@@ -17,17 +17,19 @@ func TestNewImage(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "full",
-			props: ImageProps{
-				URL:         "https://example.com/a.png",
-				PageURL:     "https://example.com/page",
-				Description: "a picture",
-			},
-			want: Image{
-				url:         "https://example.com/a.png",
-				pageURL:     "https://example.com/page",
-				description: "a picture",
-			},
+			name:  "full",
+			props: ImageProps{URL: "https://example.com/a.png", PageURL: "https://example.com/page", Description: "a picture"},
+			want:  Image{url: "https://example.com/a.png", pageURL: "https://example.com/page", description: "a picture"},
+		},
+		{
+			name:    "invalid url",
+			props:   ImageProps{URL: "invalid-url", PageURL: "https://example.com/page"},
+			wantErr: true,
+		},
+		{
+			name:    "invalid page url",
+			props:   ImageProps{URL: "https://example.com/a.png", PageURL: "invalid-url"},
+			wantErr: true,
 		},
 		{
 			name:  "description is optional",
@@ -44,7 +46,11 @@ func TestNewImage(t *testing.T) {
 			props:   ImageProps{URL: "https://example.com/a.png", Description: "a picture"},
 			wantErr: true,
 		},
-		{name: "empty props", props: ImageProps{}, wantErr: true},
+		{
+			name:    "empty props",
+			props:   ImageProps{},
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range cases {
