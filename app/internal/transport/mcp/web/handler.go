@@ -4,7 +4,6 @@ import (
 	"context"
 
 	dto "github.com/Role1776/mcp-retrieval/app/internal/dto/web"
-	"github.com/Role1776/mcp-retrieval/app/internal/transport/mcp/utils/mcpschema"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -51,7 +50,7 @@ func (h *Handler) RegisterTools(s *mcpsdk.Server) {
 			"double quotes \"exact phrase\" force an exact match; a leading '-' excludes a word (term -foo); " +
 			"'intitle:term' requires the word in the page title. Operators can be combined, e.g. " +
 			"'site:arxiv.org filetype:pdf transformers'.",
-		OutputSchema: mcpschema.OutputFor[dto.SearchResponse](),
+		OutputSchema: outputFor[dto.SearchResponse](),
 	}, h.search)
 
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
@@ -66,7 +65,7 @@ func (h *Handler) RegisterTools(s *mcpsdk.Server) {
 			"'w' (past week), 'm' (past month), 'y' (past year); leave it empty for all time.\n\n" +
 			"Query operators can be embedded in the query string: 'site:example.com term' limits to one site, " +
 			"double quotes \"exact phrase\" force an exact match, and a leading '-' excludes a word.",
-		OutputSchema: mcpschema.OutputFor[dto.ImagesSearchResponse](),
+		OutputSchema: outputFor[dto.ImagesSearchResponse](),
 	}, h.searchImages)
 
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
@@ -83,6 +82,6 @@ func (h *Handler) RegisterTools(s *mcpsdk.Server) {
 			"The limit counts characters, not tokens. A page cut short ends with '[truncated]' " +
 			"and its 'truncated' field is set; the cut-off part cannot be fetched afterwards, " +
 			"so treat what you got as all there is for that page.",
-		OutputSchema: mcpschema.OutputFor[dto.ScrapeResponse](),
+		OutputSchema: outputFor[dto.ScrapeResponse](),
 	}, h.scrape)
 }

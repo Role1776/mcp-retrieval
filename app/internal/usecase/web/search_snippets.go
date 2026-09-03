@@ -11,8 +11,7 @@ import (
 	"github.com/Role1776/mcp-retrieval/app/internal/domain/web"
 	dto "github.com/Role1776/mcp-retrieval/app/internal/dto/web"
 	"github.com/Role1776/mcp-retrieval/app/internal/pkg/validator"
-	"github.com/Role1776/mcp-retrieval/app/internal/usecase/web/webutils/limits"
-	"github.com/Role1776/mcp-retrieval/app/internal/usecase/web/webutils/parallel"
+	"github.com/Role1776/mcp-retrieval/app/internal/pkg/parallel"
 )
 
 func (u *UseCase) SearchSnippets(ctx context.Context, req dto.SearchRequest) (dto.SearchResponse, error) {
@@ -27,7 +26,7 @@ func (u *UseCase) SearchSnippets(ctx context.Context, req dto.SearchRequest) (dt
 		return dto.SearchResponse{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	timeoutMs := limits.ResolveMinMax(req.TimeoutMs, u.cfg.DefaultTimeoutMs, u.cfg.MinTimeoutMs, u.cfg.MaxTimeoutMs)
+	timeoutMs := resolveMinMax(req.TimeoutMs, u.cfg.DefaultTimeoutMs, u.cfg.MinTimeoutMs, u.cfg.MaxTimeoutMs)
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutMs)*time.Millisecond)
 	defer cancel()
@@ -70,7 +69,7 @@ func (u *UseCase) executeOneQuery(ctx context.Context, query web.Query, req dto.
 		u.logger.Error("search error", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
 	}
 
-	resSnippets := snippets.Dedupe().Limit(limits.ResolveMax(req.MaxResults, u.cfg.DefaultResults, u.cfg.MaxResults)).Rerank()
+	resSnippets := snippets.Dedupe().Limit(resolveMax(req.MaxResults, u.cfg.DefaultResults, u.cfg.MaxResults)).Rerank()
 
 	return dto.Result{
 		Query:       query.String(),

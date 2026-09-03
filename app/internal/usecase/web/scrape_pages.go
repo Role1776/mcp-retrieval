@@ -11,8 +11,7 @@ import (
 	"github.com/Role1776/mcp-retrieval/app/internal/domain/web"
 	dto "github.com/Role1776/mcp-retrieval/app/internal/dto/web"
 	"github.com/Role1776/mcp-retrieval/app/internal/pkg/validator"
-	"github.com/Role1776/mcp-retrieval/app/internal/usecase/web/webutils/limits"
-	"github.com/Role1776/mcp-retrieval/app/internal/usecase/web/webutils/parallel"
+	"github.com/Role1776/mcp-retrieval/app/internal/pkg/parallel"
 )
 
 func (u *UseCase) ScrapePages(ctx context.Context, req dto.ScrapeRequest) (dto.ScrapeResponse, error) {
@@ -27,7 +26,7 @@ func (u *UseCase) ScrapePages(ctx context.Context, req dto.ScrapeRequest) (dto.S
 		return dto.ScrapeResponse{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	timeoutMs := limits.ResolveMinMax(req.TimeoutMs, u.cfg.DefaultTimeoutMs, u.cfg.MinTimeoutMs, u.cfg.MaxTimeoutMs)
+	timeoutMs := resolveMinMax(req.TimeoutMs, u.cfg.DefaultTimeoutMs, u.cfg.MinTimeoutMs, u.cfg.MaxTimeoutMs)
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutMs)*time.Millisecond)
 	defer cancel()
@@ -73,7 +72,7 @@ func (u *UseCase) executeOneScrape(ctx context.Context, link web.Link, req dto.S
 		doc.RemoveAllLinks()
 	}
 
-	if truncErr := doc.Truncate(limits.ResolveMax(req.MaxChars, u.cfg.DefaultDocumentChars, u.cfg.MaxDocumentChars)); truncErr != nil {
+	if truncErr := doc.Truncate(resolveMax(req.MaxChars, u.cfg.DefaultDocumentChars, u.cfg.MaxDocumentChars)); truncErr != nil {
 		u.logger.Error("truncate error", slog.String("op", op), slog.String("url", link.String()), slog.Any("err", truncErr))
 	}
 

@@ -1,4 +1,4 @@
-package limits
+package web
 
 import (
 	"testing"
@@ -61,7 +61,7 @@ func TestResolveMax(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := ResolveMax(tc.requested, tc.defaultValue, tc.maximum)
+			got := resolveMax(tc.requested, tc.defaultValue, tc.maximum)
 
 			assert.Equal(t, tc.want, got)
 		})
@@ -135,7 +135,7 @@ func TestResolveMinMax(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := ResolveMinMax(tc.requested, tc.defaultValue, tc.minimum, tc.maximum)
+			got := resolveMinMax(tc.requested, tc.defaultValue, tc.minimum, tc.maximum)
 
 			assert.Equal(t, tc.want, got)
 		})

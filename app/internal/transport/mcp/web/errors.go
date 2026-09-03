@@ -1,4 +1,4 @@
-package mcperrors
+package web
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func Result(err error) *mcpsdk.CallToolResult {
+func result(err error) *mcpsdk.CallToolResult {
 	var message string
 	var isFatal bool
 

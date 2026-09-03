@@ -1,4 +1,4 @@
-package mcpschema
+package web
 
 import (
 	"fmt"
@@ -16,10 +16,10 @@ var typeSchemas = map[reflect.Type]*jsonschema.Schema{
 	reflect.TypeFor[uuid.UUID](): {Type: "string", Format: "uuid"},
 }
 
-// OutputFor builds a tool output schema explicitly, so that AddTool skips inference
+// outputFor builds a tool output schema explicitly, so that AddTool skips inference
 // and uses it as is. It panics on failure: schemas are built once at startup from
 // static types, so an error means the types cannot be described at all.
-func OutputFor[T any]() *jsonschema.Schema {
+func outputFor[T any]() *jsonschema.Schema {
 	schema, err := jsonschema.For[T](&jsonschema.ForOptions{TypeSchemas: typeSchemas})
 	if err != nil {
 		panic(fmt.Errorf("build output schema for %s: %w", reflect.TypeFor[T](), err))

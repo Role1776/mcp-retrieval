@@ -11,8 +11,7 @@ import (
 	"github.com/Role1776/mcp-retrieval/app/internal/domain/web"
 	dto "github.com/Role1776/mcp-retrieval/app/internal/dto/web"
 	"github.com/Role1776/mcp-retrieval/app/internal/pkg/validator"
-	"github.com/Role1776/mcp-retrieval/app/internal/usecase/web/webutils/limits"
-	"github.com/Role1776/mcp-retrieval/app/internal/usecase/web/webutils/parallel"
+	"github.com/Role1776/mcp-retrieval/app/internal/pkg/parallel"
 )
 
 func (u *UseCase) SearchImages(ctx context.Context, req dto.ImagesSearchRequest) (dto.ImagesSearchResponse, error) {
@@ -27,7 +26,7 @@ func (u *UseCase) SearchImages(ctx context.Context, req dto.ImagesSearchRequest)
 		return dto.ImagesSearchResponse{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	timeoutMs := limits.ResolveMinMax(req.TimeoutMs, u.cfg.DefaultTimeoutMs, u.cfg.MinTimeoutMs, u.cfg.MaxTimeoutMs)
+	timeoutMs := resolveMinMax(req.TimeoutMs, u.cfg.DefaultTimeoutMs, u.cfg.MinTimeoutMs, u.cfg.MaxTimeoutMs)
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutMs)*time.Millisecond)
 	defer cancel()
@@ -87,7 +86,7 @@ func (u *UseCase) executeOneImagesQuery(ctx context.Context, query web.Query, re
 		}, err
 	}
 
-	resImages := images.Dedupe().Limit(limits.ResolveMax(req.MaxImages, u.cfg.DefaultImages, u.cfg.MaxImages))
+	resImages := images.Dedupe().Limit(resolveMax(req.MaxImages, u.cfg.DefaultImages, u.cfg.MaxImages))
 
 	return dto.ImagesResult{
 		Query:       query.String(),
