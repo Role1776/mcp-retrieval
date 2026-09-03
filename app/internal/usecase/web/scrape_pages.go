@@ -33,7 +33,7 @@ func (u *UseCase) ScrapePages(ctx context.Context, req dto.ScrapeRequest) (dto.S
 
 	start := time.Now()
 
-	results, errs := parallel.Map(links, func(link web.Link) (dto.ScrapeResult, error) {
+	results, errs := parallel.Map(ctx, links, len(links), func(link web.Link) (dto.ScrapeResult, error) {
 		return u.executeOneScrape(ctx, link, req)
 	})
 

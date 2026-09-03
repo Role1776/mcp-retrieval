@@ -33,7 +33,7 @@ func (u *UseCase) SearchImages(ctx context.Context, req dto.ImagesSearchRequest)
 
 	start := time.Now()
 
-	results, errs := parallel.Map(queries, func(query web.Query) (dto.ImagesResult, error) {
+	results, errs := parallel.Map(ctx, queries, len(queries), func(query web.Query) (dto.ImagesResult, error) {
 		return u.executeOneImagesQuery(ctx, query, req)
 	})
 

@@ -33,7 +33,7 @@ func (u *UseCase) SearchSnippets(ctx context.Context, req dto.SearchRequest) (dt
 
 	start := time.Now()
 
-	results, errs := parallel.Map(queries, func(query web.Query) (dto.Result, error) {
+	results, errs := parallel.Map(ctx, queries, len(queries), func(query web.Query) (dto.Result, error) {
 		return u.executeOneQuery(ctx, query, req)
 	})
 
