@@ -10,8 +10,8 @@ import (
 	"github.com/Role1776/mcp-retrieval/app/internal/domain"
 	"github.com/Role1776/mcp-retrieval/app/internal/domain/web"
 	dto "github.com/Role1776/mcp-retrieval/app/internal/dto/web"
-	"github.com/Role1776/mcp-retrieval/app/internal/pkg/validator"
 	"github.com/Role1776/mcp-retrieval/app/internal/pkg/parallel"
+	"github.com/Role1776/mcp-retrieval/app/internal/pkg/validator"
 )
 
 func (u *UseCase) SearchSnippets(ctx context.Context, req dto.SearchRequest) (dto.SearchResponse, error) {
