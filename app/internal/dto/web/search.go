@@ -5,10 +5,10 @@ import (
 )
 
 type SearchRequest struct {
-	Queries    []string `json:"queries" jsonschema:"search queries in English, executed in parallel" validate:"required"`
-	MaxResults int      `json:"max_results,omitempty" jsonschema:"maximum number of snippets per query"`
-	TimeoutMs  int64    `json:"timeout_ms,omitempty" jsonschema:"timeout for the whole call in milliseconds"`
-	Date       string   `json:"date,omitempty" jsonschema:"filter results by freshness: 'd' past day, 'w' past week, 'm' past month, 'y' past year; empty means all time"`
+	Queries    []string `json:"queries" jsonschema:"1-10 search queries in English, run in parallel; each must be non-empty and at most 512 characters, otherwise the whole call is rejected" validate:"required"`
+	MaxResults int      `json:"max_results,omitempty" jsonschema:"maximum snippets per query, not in total; default 5, values above 20 are clamped to 20"`
+	TimeoutMs  int64    `json:"timeout_ms,omitempty" jsonschema:"timeout for the whole call in milliseconds, shared by all queries; default 5000, clamped to 1000-10000; unfinished queries get status 'timeout'"`
+	Date       string   `json:"date,omitempty" jsonschema:"freshness filter: 'd' past day, 'w' past week, 'm' past month, 'y' past year; empty means all time; use only these values"`
 }
 
 type SearchResponse struct {

@@ -5,10 +5,10 @@ import (
 )
 
 type ImagesSearchRequest struct {
-	Queries   []string `json:"queries" jsonschema:"queries in English for image search" validate:"required"`
-	MaxImages int      `json:"max_images,omitempty" jsonschema:"maximum number of images per query"`
-	TimeoutMs int64    `json:"timeout_ms,omitempty" jsonschema:"timeout for the whole call in milliseconds"`
-	Date      string   `json:"date,omitempty" jsonschema:"filter results by freshness: 'd' past day, 'w' past week, 'm' past month, 'y' past year; empty means all time"`
+	Queries   []string `json:"queries" jsonschema:"1-10 image search queries in English, run in parallel; each must be non-empty and at most 512 characters, otherwise the whole call is rejected" validate:"required"`
+	MaxImages int      `json:"max_images,omitempty" jsonschema:"maximum images per query, not in total; default 5, values above 10 are clamped to 10"`
+	TimeoutMs int64    `json:"timeout_ms,omitempty" jsonschema:"timeout for the whole call in milliseconds, shared by all queries; default 5000, clamped to 1000-10000; unfinished queries get status 'timeout'"`
+	Date      string   `json:"date,omitempty" jsonschema:"freshness filter: 'd' past day, 'w' past week, 'm' past month, 'y' past year; empty means all time; other values are ignored"`
 }
 
 type ImagesSearchResponse struct {

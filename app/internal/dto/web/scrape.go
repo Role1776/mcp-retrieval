@@ -5,11 +5,11 @@ import (
 )
 
 type ScrapeRequest struct {
-	URLs        []string `json:"urls" jsonschema:"links to pages, downloaded in parallel" validate:"required"`
-	RobotsTxt   bool     `json:"robots_txt,omitempty" jsonschema:"respect the page robots.txt"`
-	TimeoutMs   int64    `json:"timeout_ms,omitempty" jsonschema:"timeout for the whole call in milliseconds"`
-	RemoveLinks bool     `json:"remove_links,omitempty" jsonschema:"strip markdown links from the text"`
-	MaxChars    int      `json:"max_chars,omitempty" jsonschema:"truncate each page separately to N characters, default and maximum 20000; only lowers the limit, higher values are ignored"`
+	URLs        []string `json:"urls" jsonschema:"1-10 absolute http(s) page URLs, fetched in parallel; one malformed URL rejects the whole call" validate:"required"`
+	RobotsTxt   bool     `json:"robots_txt,omitempty" jsonschema:"if true, pages disallowed by the site robots.txt are not fetched; default false"`
+	TimeoutMs   int64    `json:"timeout_ms,omitempty" jsonschema:"timeout for the whole call in milliseconds, shared by all URLs; default 5000, clamped to 1000-10000; unfinished pages get status 'timeout'"`
+	RemoveLinks bool     `json:"remove_links,omitempty" jsonschema:"if true, markdown links are replaced by their text; default false"`
+	MaxChars    int      `json:"max_chars,omitempty" jsonschema:"character limit applied to each page separately, not to the whole response; default and maximum 20000, so it can only lower the limit; a cut page ends with '[truncated]'"`
 }
 
 type ScrapeResponse struct {
