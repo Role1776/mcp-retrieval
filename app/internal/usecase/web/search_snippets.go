@@ -63,10 +63,12 @@ func (u *UseCase) executeOneQuery(ctx context.Context, query web.Query, req dto.
 	snippets, err := u.retriever.Search(ctx, query, req.Date)
 	if err != nil {
 		status = statusFailed
-		if errors.Is(err, context.DeadlineExceeded) {
-			status = statusTimeout
-		}
 		u.logger.Error("search error", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
+		if errors.Is(err, context.DeadlineExceeded) {
+			// A timeout is reported in the item status and does not count as a failure.
+			status = statusTimeout
+			err = nil
+		}
 	}
 
 	resSnippets := snippets.Dedupe().Limit(resolveMax(req.MaxResults, u.cfg.DefaultResults, u.cfg.MaxResults)).Rerank()

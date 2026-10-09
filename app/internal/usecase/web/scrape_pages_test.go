@@ -270,3 +270,22 @@ func TestScrapePages_UnfinishedURLGetsTimeoutStatus(t *testing.T) {
 	assert.Equal(t, statusTimeout, resp.Results[0].Status)
 	assert.Equal(t, statusSuccess, resp.Results[1].Status)
 }
+
+func TestScrapePages_AllTimedOutIsNotAnError(t *testing.T) {
+	t.Parallel()
+
+	fake := newFake(nil)
+	fake.fallback = behavior{block: true}
+	uc := newTestUseCase(fake)
+
+	urls := []string{"https://example.com/a", "https://example.com/b"}
+
+	resp, err := uc.ScrapePages(context.Background(), dto.ScrapeRequest{URLs: urls, TimeoutMs: 1000})
+
+	require.NoError(t, err)
+	require.Len(t, resp.Results, 2)
+	for i, u := range urls {
+		assert.Equal(t, u, resp.Results[i].URL)
+		assert.Equal(t, statusTimeout, resp.Results[i].Status)
+	}
+}
