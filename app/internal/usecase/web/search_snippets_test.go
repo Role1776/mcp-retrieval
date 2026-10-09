@@ -256,3 +256,20 @@ func TestSearchSnippets_UnfinishedQueryGetsTimeoutStatus(t *testing.T) {
 	assert.Equal(t, statusTimeout, resp.Results[0].Status)
 	assert.Equal(t, statusSuccess, resp.Results[1].Status)
 }
+
+func TestSearchSnippets_AllTimedOutIsNotAnError(t *testing.T) {
+	t.Parallel()
+
+	fake := newFake(nil)
+	fake.fallback = behavior{block: true}
+	uc := newTestUseCase(fake)
+
+	resp, err := uc.SearchSnippets(context.Background(), dto.SearchRequest{Queries: []string{"a", "b"}, TimeoutMs: 1000})
+
+	require.NoError(t, err)
+	require.Len(t, resp.Results, 2)
+	for i, q := range []string{"a", "b"} {
+		assert.Equal(t, q, resp.Results[i].Query)
+		assert.Equal(t, statusTimeout, resp.Results[i].Status)
+	}
+}

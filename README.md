@@ -105,11 +105,11 @@ A call fails outright only when the input is rejected before any work starts, or
 | `invalid url` | A URL is malformed, over 2048 characters, or not `http`/`https`. |
 | `robots.txt denied` | `robots_txt: true` and the page disallows fetching. |
 | `upstream service unavailable` | The upstream answered with an unexpected status code. |
-| `every url failed to be scraped; the pages may be unreachable or hold no extractable text` | All URLs failed. Individual causes are logged to `stderr`, not returned. |
-| `every query failed; the search upstream may be unreachable` | All queries failed. |
+| `every url failed to be scraped; the pages may be unreachable or hold no extractable text` | Every URL failed with an error other than a timeout. Individual causes are logged to `stderr`, not returned. |
+| `every query failed; the search upstream may be unreachable` | Every query failed with an error other than a timeout. |
 | `internal server error` | Anything unclassified. |
 
-The all-failed messages deliberately do not distinguish timeouts from other causes: a mixed batch can fail for several reasons at once, and the per-item `status` already carries that detail whenever at least one item survives.
+A timeout is never a call-level error: an item that runs out of time gets `status: "timeout"`, and a call where every item timed out still returns all of them with that status. The all-failed messages only fire when no item succeeded or timed out.
 
 ### Known limitations
 
@@ -313,7 +313,7 @@ MCP client → transport/mcp/web (handler) → usecase/web → adapter/web → r
                      ↑ maps errors               ↑ validates, fans out, limits results
 ```
 
-Search and scrape both fan out across the input list concurrently and aggregate per-item results, each with its own status (`success`, `failed`, `timeout`). A call only fails outright when **every** item in it fails.
+Search and scrape both fan out across the input list concurrently and aggregate per-item results, each with its own status (`success`, `failed`, `timeout`). A call only fails outright when **every** item in it fails with an error other than a timeout.
 
 ---
 

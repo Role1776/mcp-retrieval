@@ -62,10 +62,12 @@ func (u *UseCase) executeOneScrape(ctx context.Context, link web.Link, req dto.S
 	doc, err := u.retriever.Scrape(ctx, link, req.RobotsTxt)
 	if err != nil {
 		status = statusFailed
-		if errors.Is(err, context.DeadlineExceeded) {
-			status = statusTimeout
-		}
 		u.logger.Error("scrape error", slog.String("op", op), slog.String("url", link.String()), slog.Any("err", err))
+		if errors.Is(err, context.DeadlineExceeded) {
+			// A timeout is reported in the item status and does not count as a failure.
+			status = statusTimeout
+			err = nil
+		}
 	}
 
 	if req.RemoveLinks {
