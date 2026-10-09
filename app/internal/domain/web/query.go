@@ -3,6 +3,7 @@ package web
 import (
 	"net/url"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Role1776/mcp-retrieval/app/internal/domain"
 	"github.com/Role1776/mcp-retrieval/app/internal/pkg/validator"
@@ -24,6 +25,14 @@ type QueryProps struct {
 
 func NewQuery(props QueryProps) (Query, error) {
 	props.Value = strings.TrimSpace(props.Value)
+
+	if props.Value == "" {
+		return Query{}, domain.ErrEmptyQuery
+	}
+
+	if utf8.RuneCountInString(props.Value) > maxQueryLength {
+		return Query{}, domain.ErrQueryTooLong
+	}
 
 	if err := validator.Validate(props); err != nil {
 		return Query{}, domain.ErrInvalidRequest

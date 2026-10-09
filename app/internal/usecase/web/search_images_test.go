@@ -23,6 +23,8 @@ func TestSearchImages_Validation(t *testing.T) {
 		wantErr error
 	}{
 		{name: "more than 10 queries", queries: strings.Split(strings.Repeat("q,", 11), ",")[:11], wantErr: domain.ErrTooManyQueries},
+		{name: "empty query rejects the call", queries: []string{"ok", ""}, wantErr: domain.ErrEmptyQuery},
+		{name: "query longer than 512 characters", queries: []string{"ok", strings.Repeat("a", 513)}, wantErr: domain.ErrQueryTooLong},
 	}
 
 	for _, tc := range cases {
