@@ -32,6 +32,13 @@ type call struct {
 	hasDL     bool
 }
 
+// fakeRetriever is a hand-written fake instead of a mockgen mock: the tests
+// assert the response, not the calls, so a refactoring that changes how the
+// retriever is called without changing the response must not fail them.
+// It answers per input string, which avoids custom matchers for web.Query,
+// and can block until ctx.Done() to produce a timeout. Calls are recorded
+// only for the cases where they are the behavior: arguments passed through
+// unchanged, no calls on an invalid request, the ctx deadline.
 type fakeRetriever struct {
 	mu        sync.Mutex
 	behaviors map[string]behavior
