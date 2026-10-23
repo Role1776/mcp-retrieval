@@ -104,9 +104,8 @@ A call fails outright only when the input is rejected before any work starts, or
 | `query is too long` | A query exceeds 512 characters. |
 | `invalid url` | A URL is malformed, over 2048 characters, or not `http`/`https`. |
 | `robots.txt denied` | `robots_txt: true` and the page disallows fetching. |
-| `upstream service unavailable` | The upstream answered with an unexpected status code. |
 | `every url failed to be scraped; the pages may be unreachable or hold no extractable text` | Every URL failed with an error other than a timeout. Individual causes are logged to `stderr`, not returned. |
-| `every query failed; the search upstream may be unreachable` | Every query failed with an error other than a timeout. |
+| `every query failed; the search upstream may be unreachable` | Every query failed with an error other than a timeout, including the upstream rejecting the requests (any non-200 answer, such as DuckDuckGo's HTTP 202 bot challenge under a burst of requests). The per-query cause is logged to `stderr`. |
 | `request canceled` | The client canceled the call before it finished; nothing about the upstream is implied. |
 | `internal server error` | Anything unclassified. |
 
@@ -117,6 +116,7 @@ A timeout is never a call-level error: an item that runs out of time gets `statu
 - **`web_scrape` handles HTML only.** Pages are run through a readability extractor, which needs article markup, so `text/plain` responses yield nothing and come back as `status: "failed"`. Raw-file hosts are the common case: `raw.githubusercontent.com`, `github.com/.../raw/...`, `cdn.jsdelivr.net`. Scrape the rendered page instead of the raw file.
 - **`web_search_images` relevance is not guaranteed.** For some queries Bing Images serves a page that is not a result set, and it is parsed as though it were — the tool then returns unrelated images with `status: "success"`. Treat image results as best-effort and verify them before showing them to a user.
 - **No JavaScript.** Pages are fetched as-is; content rendered client-side is invisible to the extractor.
+- **Bursts of parallel searches can trip DuckDuckGo's bot challenge.** The challenge answers with HTTP 202, which counts as a failed query, so queries keep failing until the request rate drops. A rotating proxy (see [HTTP client and proxy](#http-client-and-proxy)) spreads the load across exit IPs.
 
 ---
 
