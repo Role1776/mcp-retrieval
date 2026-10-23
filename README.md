@@ -216,7 +216,7 @@ Set `MCP_TRANSPORT=http` and the server listens on `SERVER_PORT` at `MCP_PATH` (
 
 ## Configuration
 
-Everything is configured through **environment variables**, and each value is validated before startup: a non-numeric or non-positive value is a startup error. Relationships *between* limits are not checked at startup — see [Limits](#limits). Variables already present in the environment win over a `.env` file, so an MCP client's `env` block always takes effect. Every field has a sensible default, so the server runs with no configuration at all (stdio transport).
+Everything is configured through **environment variables**, and each value is validated before startup: a non-numeric or non-positive value is a startup error (the `*_IN_FLIGHT` caps also accept `0`). Relationships *between* limits are not checked at startup — see [Limits](#limits). Variables already present in the environment win over a `.env` file, so an MCP client's `env` block always takes effect. Every field has a sensible default, so the server runs with no configuration at all (stdio transport).
 
 See [`.env.example`](.env.example) for the full list at its default values, ready to copy to `.env`.
 
@@ -265,8 +265,12 @@ When a proxy is configured, each outbound request gets a unique session id appen
 | `MAX_IMAGES` | `10` |
 | `DEFAULT_DOCUMENT_CHARS` | `20000` |
 | `MAX_DOCUMENT_CHARS` | `20000` |
+| `MAX_SEARCH_IN_FLIGHT` | `2` |
+| `MAX_IMAGES_IN_FLIGHT` | `2` |
 
-Each value is checked on its own — it must be greater than zero — but the `DEFAULT_*`, `MIN_*` and `MAX_*` triples are **not** cross-checked against each other at startup. An inconsistent set does not stop the server; it is reconciled per request instead:
+`MAX_SEARCH_IN_FLIGHT` and `MAX_IMAGES_IN_FLIGHT` cap concurrent upstream web and image search requests per server process; `0` disables the cap.
+
+Each value is checked on its own — it must be greater than zero, except the `*_IN_FLIGHT` caps, where `0` disables the cap — but the `DEFAULT_*`, `MIN_*` and `MAX_*` triples are **not** cross-checked against each other at startup. An inconsistent set does not stop the server; it is reconciled per request instead:
 
 - a value the caller omits, or passes as zero or negative, falls back to the matching `DEFAULT_*`;
 - the result is then clamped into `[MIN_*, MAX_*]`, so a `DEFAULT_*` larger than its `MAX_*` simply yields `MAX_*`;
