@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/Role1776/mcp-retrieval/app/internal/domain/web"
+	"github.com/Role1776/mcp-retrieval/app/internal/pkg/parallel"
 )
 
 const (
@@ -31,12 +32,16 @@ type SearchConfig struct {
 	MaxImages            int   `env:"MAX_IMAGES" envDefault:"10" validate:"gt=0"`
 	DefaultDocumentChars int   `env:"DEFAULT_DOCUMENT_CHARS" envDefault:"20000" validate:"gt=0"`
 	MaxDocumentChars     int   `env:"MAX_DOCUMENT_CHARS" envDefault:"20000" validate:"gt=0"`
+	MaxSearchInFlight    int   `env:"MAX_SEARCH_IN_FLIGHT" envDefault:"2" validate:"gte=0"`
+	MaxImagesInFlight    int   `env:"MAX_IMAGES_IN_FLIGHT" envDefault:"2" validate:"gte=0"`
 }
 
 type UseCase struct {
 	retriever retrieval
 	logger    *slog.Logger
 	cfg       *SearchConfig
+	searchSem *parallel.Semaphore
+	imagesSem *parallel.Semaphore
 }
 
 func New(retriever retrieval, logger *slog.Logger, cfg *SearchConfig) *UseCase {
@@ -44,5 +49,7 @@ func New(retriever retrieval, logger *slog.Logger, cfg *SearchConfig) *UseCase {
 		retriever: retriever,
 		logger:    logger,
 		cfg:       cfg,
+		searchSem: parallel.NewSemaphore(cfg.MaxSearchInFlight),
+		imagesSem: parallel.NewSemaphore(cfg.MaxImagesInFlight),
 	}
 }
