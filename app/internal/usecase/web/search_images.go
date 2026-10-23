@@ -37,6 +37,12 @@ func (u *UseCase) SearchImages(ctx context.Context, req dto.ImagesSearchRequest)
 		return u.executeOneImagesQuery(ctx, query, req)
 	})
 
+	if errors.Is(ctx.Err(), context.Canceled) {
+		u.logger.Info("request canceled", slog.String("op", op))
+
+		return dto.ImagesSearchResponse{}, fmt.Errorf("%s: %w", op, domain.ErrCanceled)
+	}
+
 	if len(errs) >= len(queries) && len(errs) > 0 {
 		u.logger.Error("all queries failed", slog.String("op", op), slog.Any("errs", errs))
 
@@ -82,7 +88,11 @@ func (u *UseCase) executeOneImagesQuery(ctx context.Context, query web.Query, re
 			}, nil
 		}
 
-		u.logger.Error("images search error", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
+		if errors.Is(err, context.Canceled) {
+			u.logger.Info("images search canceled", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
+		} else {
+			u.logger.Error("images search error", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
+		}
 
 		return dto.ImagesResult{
 			Query:       query.String(),

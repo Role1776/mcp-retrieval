@@ -37,6 +37,12 @@ func (u *UseCase) SearchSnippets(ctx context.Context, req dto.SearchRequest) (dt
 		return u.executeOneQuery(ctx, query, req)
 	})
 
+	if errors.Is(ctx.Err(), context.Canceled) {
+		u.logger.Info("request canceled", slog.String("op", op))
+
+		return dto.SearchResponse{}, fmt.Errorf("%s: %w", op, domain.ErrCanceled)
+	}
+
 	if len(errs) >= len(queries) && len(errs) > 0 {
 		u.logger.Error("all queries failed", slog.String("op", op), slog.Any("errs", errs))
 
@@ -68,7 +74,11 @@ func (u *UseCase) executeOneQuery(ctx context.Context, query web.Query, req dto.
 	}
 	if err != nil {
 		status = statusFailed
-		u.logger.Error("search error", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
+		if errors.Is(err, context.Canceled) {
+			u.logger.Info("search canceled", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
+		} else {
+			u.logger.Error("search error", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))
+		}
 		if errors.Is(err, context.DeadlineExceeded) {
 			// A timeout is reported in the item status and does not count as a failure.
 			status = statusTimeout
