@@ -99,7 +99,7 @@ A call fails outright only when the input is rejected before any work starts, or
 | Message | Meaning |
 | :--- | :--- |
 | `invalid request` | The arguments did not pass validation. |
-| `too many queries` / `too many urls` | The list exceeds `MAX_QUERIES`. |
+| `too many queries` / `too many urls` | The list exceeds `MAX_QUERIES`. Lists this long are normally rejected earlier by input-schema validation (the schema carries `maxItems`), so the client sees `validating "arguments": maxItems: ...` instead; this message is a fallback. |
 | `query must not be empty` | An empty query, or an empty `queries` list. |
 | `query is too long` | A query exceeds 512 characters. |
 | `invalid url` | A URL is malformed, over 2048 characters, or not `http`/`https`. |
