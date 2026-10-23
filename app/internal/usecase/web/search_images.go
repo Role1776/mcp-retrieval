@@ -59,7 +59,12 @@ func (u *UseCase) executeOneImagesQuery(ctx context.Context, query web.Query, re
 	const op = "usecase.web.executeOneImagesQuery"
 	start := time.Now()
 
-	images, err := u.retriever.Images(ctx, query, req.Date)
+	var images web.Images
+	release, err := u.imagesSem.Acquire(ctx)
+	if err == nil {
+		images, err = u.retriever.Images(ctx, query, req.Date)
+		release()
+	}
 	if err != nil {
 		if errors.Is(err, domain.ErrNoRelevantImages) {
 			return dto.ImagesResult{

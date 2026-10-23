@@ -60,7 +60,12 @@ func (u *UseCase) executeOneQuery(ctx context.Context, query web.Query, req dto.
 	start := time.Now()
 	status := statusSuccess
 
-	snippets, err := u.retriever.Search(ctx, query, req.Date)
+	var snippets web.Snippets
+	release, err := u.searchSem.Acquire(ctx)
+	if err == nil {
+		snippets, err = u.retriever.Search(ctx, query, req.Date)
+		release()
+	}
 	if err != nil {
 		status = statusFailed
 		u.logger.Error("search error", slog.String("op", op), slog.String("query", query.String()), slog.Any("err", err))

@@ -39,6 +39,8 @@ func TestLoad(t *testing.T) {
 		maxImages            int
 		defaultDocumentChars int
 		maxDocumentChars     int
+		maxSearchInFlight    int
+		maxImagesInFlight    int
 	}
 
 	cases := []struct {
@@ -68,6 +70,8 @@ func TestLoad(t *testing.T) {
 				maxImages:            10,
 				defaultDocumentChars: 20000,
 				maxDocumentChars:     20000,
+				maxSearchInFlight:    2,
+				maxImagesInFlight:    2,
 			},
 		},
 		{
@@ -98,6 +102,8 @@ func TestLoad(t *testing.T) {
 				maxImages:            10,
 				defaultDocumentChars: 20000,
 				maxDocumentChars:     20000,
+				maxSearchInFlight:    2,
+				maxImagesInFlight:    2,
 			},
 		},
 		{
@@ -124,6 +130,8 @@ func TestLoad(t *testing.T) {
 				maxImages:            10,
 				defaultDocumentChars: 20000,
 				maxDocumentChars:     20000,
+				maxSearchInFlight:    2,
+				maxImagesInFlight:    2,
 			},
 		},
 		{
@@ -161,6 +169,8 @@ func TestLoad(t *testing.T) {
 				maxImages:            10,
 				defaultDocumentChars: 20000,
 				maxDocumentChars:     20000,
+				maxSearchInFlight:    2,
+				maxImagesInFlight:    2,
 			},
 		},
 		{
@@ -208,6 +218,8 @@ func TestLoad(t *testing.T) {
 				maxImages:            10,
 				defaultDocumentChars: 20000,
 				maxDocumentChars:     20000,
+				maxSearchInFlight:    2,
+				maxImagesInFlight:    2,
 			},
 		},
 		{
@@ -230,6 +242,7 @@ func TestLoad(t *testing.T) {
 				"DEFAULT_TIMEOUT_MS", "MAX_TIMEOUT_MS", "MIN_TIMEOUT_MS",
 				"DEFAULT_IMAGES", "MAX_IMAGES",
 				"DEFAULT_DOCUMENT_CHARS", "MAX_DOCUMENT_CHARS",
+				"MAX_SEARCH_IN_FLIGHT", "MAX_IMAGES_IN_FLIGHT",
 			} {
 				t.Setenv(k, "") // registers cleanup
 				require.NoError(t, os.Unsetenv(k))
@@ -284,6 +297,8 @@ func TestLoad(t *testing.T) {
 			assert.Equal(t, tc.expected.maxImages, cfg.SearchUseCase.MaxImages)
 			assert.Equal(t, tc.expected.defaultDocumentChars, cfg.SearchUseCase.DefaultDocumentChars)
 			assert.Equal(t, tc.expected.maxDocumentChars, cfg.SearchUseCase.MaxDocumentChars)
+			assert.Equal(t, tc.expected.maxSearchInFlight, cfg.SearchUseCase.MaxSearchInFlight)
+			assert.Equal(t, tc.expected.maxImagesInFlight, cfg.SearchUseCase.MaxImagesInFlight)
 		})
 	}
 }
