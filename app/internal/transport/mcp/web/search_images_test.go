@@ -77,7 +77,7 @@ func TestSearchImages(t *testing.T) {
 			uc := NewMockusecase(ctrl)
 			uc.EXPECT().SearchImages(gomock.Any(), req).Return(tc.res, tc.err)
 
-			h := New(uc)
+			h := New(uc, 10)
 
 			// act
 			result, res, err := h.searchImages(context.Background(), nil, req)

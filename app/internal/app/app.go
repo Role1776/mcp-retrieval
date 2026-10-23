@@ -52,7 +52,7 @@ func (a *App) Run() error {
 
 	mcpSrv := mcpserver.NewServer(a.Config.MCP)
 
-	mcpRouter.New(mcpSrv.MCP(), mcpWeb.New(webUseCase)).RegisterAllTools()
+	mcpRouter.New(mcpSrv.MCP(), mcpWeb.New(webUseCase, a.Config.SearchUseCase.MaxQueries)).RegisterAllTools()
 
 	run, err := a.buildMCPServer(mcpSrv)
 	if err != nil {
