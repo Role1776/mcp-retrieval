@@ -27,3 +27,21 @@ func outputFor[T any]() *jsonschema.Schema {
 
 	return schema
 }
+
+// inputFor builds a tool input schema for T and caps the array property listName at maxItems,
+// so that clients and the SDK reject oversized lists before the handler runs.
+func inputFor[T any](listName string, maxItems int) *jsonschema.Schema {
+	schema, err := jsonschema.For[T](&jsonschema.ForOptions{TypeSchemas: typeSchemas})
+	if err != nil {
+		panic(fmt.Errorf("build input schema for %s: %w", reflect.TypeFor[T](), err))
+	}
+
+	prop, ok := schema.Properties[listName]
+	if !ok {
+		panic(fmt.Errorf("build input schema for %s: no property %q", reflect.TypeFor[T](), listName))
+	}
+
+	prop.MaxItems = jsonschema.Ptr(maxItems)
+
+	return schema
+}

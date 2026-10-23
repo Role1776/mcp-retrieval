@@ -22,12 +22,14 @@ type usecase interface {
 }
 
 type Handler struct {
-	usecase usecase
+	usecase  usecase
+	maxItems int
 }
 
-func New(usecase usecase) *Handler {
+func New(usecase usecase, maxItems int) *Handler {
 	return &Handler{
-		usecase: usecase,
+		usecase:  usecase,
+		maxItems: maxItems,
 	}
 }
 
@@ -47,6 +49,7 @@ func (h *Handler) RegisterTools(s *mcpsdk.Server) {
 		Name:        toolSearch,
 		Annotations: readOnlyAnnotations(),
 		Title:       "Web search",
+		InputSchema: inputFor[dto.SearchRequest]("queries", h.maxItems),
 		Description: "Searches the web for one or more queries and returns snippets with links. " +
 			"Queries run in parallel. IMPORTANT: Always write search queries in English for best results and relevance. " +
 			"Use this to find sources; then call '" + toolScrape + "' to read a full page, " +
@@ -69,6 +72,7 @@ func (h *Handler) RegisterTools(s *mcpsdk.Server) {
 		Name:        toolSearchImages,
 		Annotations: readOnlyAnnotations(),
 		Title:       "Web image search",
+		InputSchema: inputFor[dto.ImagesSearchRequest]("queries", h.maxItems),
 		Description: "Searches for images by one or more queries, executed in parallel. " +
 			"IMPORTANT: Queries must be in English ONLY. " +
 			"Use this only when you need pictures; use '" + toolSearch + "' for text answers and links, " +
@@ -87,6 +91,7 @@ func (h *Handler) RegisterTools(s *mcpsdk.Server) {
 		Name:        toolScrape,
 		Annotations: readOnlyAnnotations(),
 		Title:       "Web scrape",
+		InputSchema: inputFor[dto.ScrapeRequest]("urls", h.maxItems),
 		Description: "Downloads pages by their links and returns the main text as markdown. " +
 			"Use this to read a page in full after '" + toolSearch + "' found it; snippets alone are often not enough. " +
 			"Links are fetched in parallel, up to 10 per call, so batch all links into one call.\n\n" +

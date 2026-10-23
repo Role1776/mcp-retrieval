@@ -76,7 +76,7 @@ func TestScrape(t *testing.T) {
 			uc := NewMockusecase(ctrl)
 			uc.EXPECT().ScrapePages(gomock.Any(), req).Return(tc.res, tc.err)
 
-			h := New(uc)
+			h := New(uc, 10)
 
 			// act
 			result, res, err := h.scrape(context.Background(), nil, req)

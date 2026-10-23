@@ -77,7 +77,7 @@ func TestSearch(t *testing.T) {
 			uc := NewMockusecase(ctrl)
 			uc.EXPECT().SearchSnippets(gomock.Any(), req).Return(tc.res, tc.err)
 
-			h := New(uc)
+			h := New(uc, 10)
 
 			// act
 			result, res, err := h.search(context.Background(), nil, req)
