@@ -51,6 +51,10 @@ func result(err error) *mcpsdk.CallToolResult {
 		message = "every query failed; the search upstream may be unreachable"
 		isFatal = true
 
+	case errors.Is(err, domain.ErrCanceled):
+		message = "request canceled"
+		isFatal = true
+
 	default:
 		message = "internal server error"
 		isFatal = true

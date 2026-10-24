@@ -15,4 +15,5 @@ var (
 	ErrAllURLsFailed        = errors.New("all urls failed")
 	ErrAllQueriesFailed     = errors.New("all queries failed")
 	ErrNoRelevantImages     = errors.New("no relevant images")
+	ErrCanceled             = errors.New("canceled")
 )

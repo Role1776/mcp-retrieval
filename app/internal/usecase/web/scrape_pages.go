@@ -37,6 +37,12 @@ func (u *UseCase) ScrapePages(ctx context.Context, req dto.ScrapeRequest) (dto.S
 		return u.executeOneScrape(ctx, link, req)
 	})
 
+	if errors.Is(ctx.Err(), context.Canceled) {
+		u.logger.Info("request canceled", slog.String("op", op))
+
+		return dto.ScrapeResponse{}, fmt.Errorf("%s: %w", op, domain.ErrCanceled)
+	}
+
 	if len(errs) >= len(links) && len(errs) > 0 {
 		u.logger.Error("all urls failed", slog.String("op", op), slog.Any("errs", errs))
 
@@ -62,7 +68,11 @@ func (u *UseCase) executeOneScrape(ctx context.Context, link web.Link, req dto.S
 	doc, err := u.retriever.Scrape(ctx, link, req.RobotsTxt)
 	if err != nil {
 		status = statusFailed
-		u.logger.Error("scrape error", slog.String("op", op), slog.String("url", link.String()), slog.Any("err", err))
+		if errors.Is(err, context.Canceled) {
+			u.logger.Info("scrape canceled", slog.String("op", op), slog.String("url", link.String()), slog.Any("err", err))
+		} else {
+			u.logger.Error("scrape error", slog.String("op", op), slog.String("url", link.String()), slog.Any("err", err))
+		}
 		if errors.Is(err, context.DeadlineExceeded) {
 			// A timeout is reported in the item status and does not count as a failure.
 			status = statusTimeout

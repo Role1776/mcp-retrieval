@@ -107,6 +107,7 @@ A call fails outright only when the input is rejected before any work starts, or
 | `upstream service unavailable` | The upstream answered with an unexpected status code. |
 | `every url failed to be scraped; the pages may be unreachable or hold no extractable text` | Every URL failed with an error other than a timeout. Individual causes are logged to `stderr`, not returned. |
 | `every query failed; the search upstream may be unreachable` | Every query failed with an error other than a timeout. |
+| `request canceled` | The client canceled the call before it finished; nothing about the upstream is implied. |
 | `internal server error` | Anything unclassified. |
 
 A timeout is never a call-level error: an item that runs out of time gets `status: "timeout"`, and a call where every item timed out still returns all of them with that status. The all-failed messages only fire when no item succeeded or timed out.
